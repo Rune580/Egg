@@ -1,0 +1,6 @@
+Sky day night -1 null true
+Dirt day night 1 null false
+Grass day night 1 null false
+Stone day night 1 null false
+Log day night 1 null true
+Leaves day night 1 null true
