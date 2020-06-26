@@ -122,6 +122,7 @@ namespace DiscordBot
         public static List<NonExistantUsers> deadpeople = new List<NonExistantUsers>();
         public static List<RemindMe> reminders = new List<RemindMe>();
         public static int cyear = DateTime.Now.Year, cmonth = DateTime.Now.Month, cday = DateTime.Now.Day, chour = DateTime.Now.Hour, cminute = DateTime.Now.Minute, csecond = DateTime.Now.Second;
+        public static GalaxyStroke galaxywords;
         #endregion
         static void Main(string[] args)
         {
@@ -205,8 +206,23 @@ namespace DiscordBot
             {
                 item.FixTimes();
             }
+            IFormatter f2 = new BinaryFormatter();
+            if (File.Exists(@"..\..\galaxy.words"))
+            {
+                using (Stream r = new FileStream(@"..\..\galaxy.words", FileMode.Open, FileAccess.Read))
+                {
+                    galaxywords = (GalaxyStroke)f2.Deserialize(r);
+                }
+            }
             #endregion
             #region Banned Commands
+            BannedCommands.Add("GALAXY STROKE");
+            BannedCommands.Add("GALAXYSTROKE");
+            BannedCommands.Add("SAVE THE GALAXY");
+            BannedCommands.Add("BIND GALAXY DEBUG");
+            BannedCommands.Add("BINDGALAXYDEBUG");
+            BannedCommands.Add("GALAXYDEBUG");
+            BannedCommands.Add("GALAXY DEBUG");
             BannedCommands.Add("DELETE REMINDER");
             BannedCommands.Add("ERASE REMINDER");
             BannedCommands.Add("CLEAR ALL REMINDERS");
@@ -402,6 +418,50 @@ namespace DiscordBot
                                 else
                                 {
                                     await message.Channel.SendMessageAsync(CustomMessage);
+                                }
+                            }
+                            else if (TheMessage.StartsWith("GALAXY STROKE") || TheMessage.StartsWith("GALAXYSTROKE"))
+                            {
+                                TheMessage = TheMessage.Remove(0, "GALAXY STROKE".Length);
+                                RemoveWhiteSpace(ref TheMessage);
+                                try
+                                {
+                                    int num = Int32.Parse(TheMessage);
+                                    await message.Channel.SendMessageAsync(galaxywords.RetrieveString(num));
+                                }
+                                catch (Exception)
+                                {
+                                    await message.Channel.SendMessageAsync(galaxywords.RetrieveString());
+                                }
+                            }
+                            else if (TheMessage.StartsWith("SAVE THE GALAXY"))
+                            {
+                                SaveTheGalaxy();
+                                await message.Channel.SendMessageAsync("Ok, done!");
+                            }
+                            else if (TheMessage.StartsWith("BINDGALAXYDEBUG") || TheMessage.StartsWith("BIND GALAXY DEBUG"))
+                            {
+                                if (message.Author.Id == MyID)
+                                {
+                                    if (galaxywords.GalaxyBind(message.Channel.Id))
+                                    {
+                                        await message.Channel.SendMessageAsync("Channel bound for the [GALAXY DEBUG] command!");
+                                    }
+                                    else
+                                    {
+                                        await message.Channel.SendMessageAsync("Channel unbound for the [GALAXY DEBUG] command!");
+                                    }
+                                }
+                                else
+                                {
+                                    await message.Channel.SendMessageAsync("No");
+                                }
+                            }
+                            else if (TheMessage.StartsWith("GALAXYDEBUG") || TheMessage.StartsWith("GALAXY DEBUG"))
+                            {
+                                if (!galaxywords.GalaxyDebug(message))
+                                {
+                                    await message.Channel.SendMessageAsync($"Channel not setup for debugging, pinging <@{MyID}> to fix this.");
                                 }
                             }
                             else if (TheMessage.StartsWith("REMINDERS HELP") || TheMessage.StartsWith("REMINDERSHELP") || TheMessage.StartsWith("REMINDER HELP") || TheMessage.StartsWith("REMINDERHELP"))
@@ -2281,6 +2341,16 @@ namespace DiscordBot
                     {
                         Console.WriteLine(e.Message);
                     }
+                if (message.Author.Id != Egg)
+                {
+                    try
+                    {
+                        galaxywords.AddWords(message.Content);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
             }
             async Task Banned(SocketUser user, SocketGuild guild)
             {
@@ -3281,6 +3351,13 @@ namespace DiscordBot
                     f.Serialize(r, reminders);
                 }
             }
+            async void SaveTheGalaxy()
+            {
+                using (Stream r = new FileStream(@"..\..\galaxy.words", FileMode.Create, FileAccess.Write))
+                {
+                    f2.Serialize(r, galaxywords);
+                }
+            }
             void RemoveWhiteSpace(ref string yeetem)
             {
                 while (yeetem[0] == ' ')
@@ -3686,6 +3763,7 @@ namespace DiscordBot
                 }
                 if (CurrentHour != DateTime.Now.Hour)
                 {
+                    SaveTheGalaxy();
                     TopDown.SavePlayers();
                     CurrentHour = DateTime.Now.Hour;
                 }
