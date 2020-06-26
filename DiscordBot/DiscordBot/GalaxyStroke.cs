@@ -16,18 +16,22 @@ namespace DiscordBot
     [Serializable]
     class GalaxyStroke
     {
+        public List<ulong> optedout = new List<ulong>();
         public List<ulong> boundchannels = new List<ulong>();
         public List<GalaxyWord> words = new List<GalaxyWord>();
-        public void AddWords(string input)
+        public void AddWords(string input, ulong id)
         {
-            DateTime time = DateTime.Now;
-            string[] yeet = input.Split(' ');
-            foreach (var item in yeet)
+            if (!optedout.Contains(id))
             {
-                GalaxyWord temp;
-                temp.word = item;
-                temp.timestamp = time;
-                words.Add(temp);
+                DateTime time = DateTime.Now;
+                string[] yeet = input.Split(' ');
+                foreach (var item in yeet)
+                {
+                    GalaxyWord temp;
+                    temp.word = item;
+                    temp.timestamp = time;
+                    words.Add(temp);
+                }
             }
         }
         public void UpdateWords()
@@ -84,6 +88,7 @@ namespace DiscordBot
         {
             if (boundchannels.Contains(channel))
             {
+                boundchannels.Remove(channel);
                 return false;
             }
             else
@@ -97,7 +102,7 @@ namespace DiscordBot
             if (boundchannels.Contains(m.Channel.Id))
             {
                 StringBuilder sb = new StringBuilder();
-                sb.Append("All currently available words:\n```");
+                sb.Append("```Messages are only saved for 24 hours, if you wish to opt out of this list, type 'Galaxy Opt Out'```\nAll currently available words:\n```");
                 for (int i = 0; i < words.Count; i++)
                 {
                     if (sb.Length + words[i].word.Length + 3 > 2000)
@@ -122,6 +127,20 @@ namespace DiscordBot
             else
             {
                 return false;
+            }
+        }
+
+        public bool optOut(ulong id)
+        {
+            if (optedout.Contains(id))
+            {
+                optedout.Remove(id);
+                return false;
+            }
+            else
+            {
+                optedout.Add(id);
+                return true;
             }
         }
     }

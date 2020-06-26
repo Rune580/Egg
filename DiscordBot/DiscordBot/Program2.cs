@@ -216,6 +216,8 @@ namespace DiscordBot
             }
             #endregion
             #region Banned Commands
+            BannedCommands.Add("GALAXYOPTOUT");
+            BannedCommands.Add("GALAXY OPT OUT");
             BannedCommands.Add("GALAXY STROKE");
             BannedCommands.Add("GALAXYSTROKE");
             BannedCommands.Add("SAVE THE GALAXY");
@@ -418,6 +420,17 @@ namespace DiscordBot
                                 else
                                 {
                                     await message.Channel.SendMessageAsync(CustomMessage);
+                                }
+                            }
+                            else if (TheMessage.StartsWith("GALAXY OPT OUT") || TheMessage.StartsWith("GALAXYOPTOUT"))
+                            {
+                                if (galaxywords.optOut(message.Author.Id))
+                                {
+                                    await message.Channel.SendMessageAsync("You have opted out of the Galaxy Stroke command. Your messages will no longer be recorded for the stroke database.\nIf this was a mistake, simply type 'Galaxy Opt Out' again.");
+                                }
+                                else
+                                {
+                                    await message.Channel.SendMessageAsync("You have opted back into the Galaxy Stroke command. Welcome back to the cool kids club.");
                                 }
                             }
                             else if (TheMessage.StartsWith("GALAXY STROKE") || TheMessage.StartsWith("GALAXYSTROKE"))
@@ -2350,7 +2363,7 @@ namespace DiscordBot
                     try
                     {
                         if (!strokeoutdab)
-                            galaxywords.AddWords(message.Content);
+                            galaxywords.AddWords(message.Content, message.Author.Id);
                     }
                     catch (Exception)
                     {
