@@ -436,7 +436,8 @@ namespace DiscordBot
                             }
                             else if (TheMessage.StartsWith("GALAXY STROKE") || TheMessage.StartsWith("GALAXYSTROKE"))
                             {
-                                TheMessage = TheMessage.Remove(0, "GALAXY STROKE".Length);
+                                TheMessage = TheMessage.Remove(0, "GALAXYSTROKE".Length);
+                                RemoveFilledSpace(ref TheMessage);
                                 RemoveWhiteSpace(ref TheMessage);
                                 try
                                 {
@@ -2213,8 +2214,10 @@ namespace DiscordBot
                                     //sb.Append($"Play Youtube Song\nYou can play (most) youtube songs if you are in a voice channel! Simply type Play, followed by your url. You can make me leave a voice channel by typing Leave.\nExample usage: Play https://www.youtube.com/watch?v=3j6ZCVWNF4Q\nAll music commands: Play, Skip, Join, Leave\n\n");
                                     sb.Append($"LMGTFY\nIf someone asks a question, tell them to 'Google It' and I will give you a LetMeGoogleThatForYou link.\n\n");
                                     sb.Append($"(not)Minecraft\nYou can walk around the world and place blocks and stuff. To see more info, type MHelp.\n\n");
-                                    sb.Append($"Vanish\n Who knows what this command does?\nExample usage: !vanish");
+                                    sb.Append($"Vanish\n Who knows what this command does?\nExample usage: !vanish\n\n");
                                     sb.Append($"Create Reminders\nCreate reminders for yourself\nExample Usage: RemindMe 2 hours ^ yeet\nType RemindersHelp for more info and technicalities.\n\n");
+                                    sb.Append($"Super Stroke!\nCombine the previous 3 messages in a random order.\nExample usage: superstroke\n\n");
+                                    sb.Append($"Galaxy Stroke!\nCombine some amount of words said in the past 24 hours (default 30 words if not specified) in a random order. Type 'Galaxy Debug' for more info.\nExample usage: Galaxy Stroke 50\n\n");
                                     //sb.Append($"\n\n");
                                     sb.Append($"``");
                                     await message.Channel.SendMessageAsync(sb.ToString());
@@ -3390,6 +3393,10 @@ namespace DiscordBot
             }
             void RemoveFilledSpace(ref string yeetem)
             {
+                if (yeetem.Length == 0)
+                {
+                    return;
+                }
                 while (yeetem[0] != ' ')
                 {
                     yeetem = yeetem.Remove(0, 1);
