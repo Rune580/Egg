@@ -122,7 +122,7 @@ namespace DiscordBot
         public static List<NonExistantUsers> deadpeople = new List<NonExistantUsers>();
         public static List<RemindMe> reminders = new List<RemindMe>();
         public static int cyear = DateTime.Now.Year, cmonth = DateTime.Now.Month, cday = DateTime.Now.Day, chour = DateTime.Now.Hour, cminute = DateTime.Now.Minute, csecond = DateTime.Now.Second;
-        public static GalaxyStroke galaxywords;
+        public static GalaxyStroke galaxywords = new GalaxyStroke();
         #endregion
         static void Main(string[] args)
         {
@@ -354,10 +354,10 @@ namespace DiscordBot
             #endregion
             async Task MessageReceived(SocketMessage message)
             {
+                bool strokeoutdab = false;
                 if (message.Attachments.Count == 0 && message.Id != strokemessage)
                     try
                     {
-                        bool strokeoutdab = false;
                         bool appendrules = false;
                         //UnSentHandler.SentMessage(TheSenderNoString.Id, message.Channel, message.Author);
                         TheMessage = message.Content.ToUpper();
@@ -433,14 +433,17 @@ namespace DiscordBot
                                 {
                                     await message.Channel.SendMessageAsync(galaxywords.RetrieveString());
                                 }
+                                strokeoutdab = true;
                             }
                             else if (TheMessage.StartsWith("SAVE THE GALAXY"))
                             {
+                                strokeoutdab = true;
                                 SaveTheGalaxy();
                                 await message.Channel.SendMessageAsync("Ok, done!");
                             }
                             else if (TheMessage.StartsWith("BINDGALAXYDEBUG") || TheMessage.StartsWith("BIND GALAXY DEBUG"))
                             {
+                                strokeoutdab = true;
                                 if (message.Author.Id == MyID)
                                 {
                                     if (galaxywords.GalaxyBind(message.Channel.Id))
@@ -459,6 +462,7 @@ namespace DiscordBot
                             }
                             else if (TheMessage.StartsWith("GALAXYDEBUG") || TheMessage.StartsWith("GALAXY DEBUG"))
                             {
+                                strokeoutdab = true;
                                 if (!galaxywords.GalaxyDebug(message))
                                 {
                                     await message.Channel.SendMessageAsync($"Channel not setup for debugging, pinging <@{MyID}> to fix this.");
@@ -2345,7 +2349,8 @@ namespace DiscordBot
                 {
                     try
                     {
-                        galaxywords.AddWords(message.Content);
+                        if (!strokeoutdab)
+                            galaxywords.AddWords(message.Content);
                     }
                     catch (Exception)
                     {
@@ -3360,6 +3365,10 @@ namespace DiscordBot
             }
             void RemoveWhiteSpace(ref string yeetem)
             {
+                if (yeetem.Length == 0)
+                {
+                    return;
+                }
                 while (yeetem[0] == ' ')
                 {
                     yeetem = yeetem.Remove(0, 1);

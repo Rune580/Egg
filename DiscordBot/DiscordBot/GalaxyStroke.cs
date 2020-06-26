@@ -66,12 +66,12 @@ namespace DiscordBot
             {
                 sb = sb.Remove(num2-1, num2);
             }
-            foreach (var item in used)
+            for (int x = 0; x < used.Count; x++)
             {
-                words.RemoveAt(item);
+                words.RemoveAt(used[x]);
                 for (int i = 0; i < used.Count; i++)
                 {
-                    if (used[i] > item)
+                    if (used[i] > used[x])
                     {
                         used[i]--;
                     }
@@ -94,7 +94,7 @@ namespace DiscordBot
         }
         public bool GalaxyDebug(SocketMessage m)
         {
-            if (boundchannels.Contains(m.Id))
+            if (boundchannels.Contains(m.Channel.Id))
             {
                 StringBuilder sb = new StringBuilder();
                 sb.Append("All currently available words:\n```");
@@ -110,6 +110,7 @@ namespace DiscordBot
                     if (i == words.Count-1)
                     {
                         sb.Append($"{words[i].word}```");
+                        m.Channel.SendMessageAsync(sb.ToString());
                     }
                     else
                     {
