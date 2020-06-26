@@ -424,6 +424,7 @@ namespace DiscordBot
                             }
                             else if (TheMessage.StartsWith("GALAXY OPT OUT") || TheMessage.StartsWith("GALAXYOPTOUT"))
                             {
+                                strokeoutdab = true;
                                 if (galaxywords.optOut(message.Author.Id))
                                 {
                                     await message.Channel.SendMessageAsync("You have opted out of the Galaxy Stroke command. Your messages will no longer be recorded for the stroke database.\nIf this was a mistake, simply type 'Galaxy Opt Out' again.");
