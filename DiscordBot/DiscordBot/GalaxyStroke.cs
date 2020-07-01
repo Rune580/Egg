@@ -19,9 +19,9 @@ namespace DiscordBot
         public List<ulong> optedout = new List<ulong>();
         public List<ulong> boundchannels = new List<ulong>();
         public List<GalaxyWord> words = new List<GalaxyWord>();
-        public void AddWords(string input, ulong id)
+        public void AddWords(string input, ulong id, ulong channel)
         {
-            if (!optedout.Contains(id))
+            if (!optedout.Contains(id) && !boundchannels.Contains(channel))
             {
                 DateTime time = DateTime.Now;
                 string[] yeet = input.Split(' ');

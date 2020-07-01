@@ -2367,7 +2367,7 @@ namespace DiscordBot
                     try
                     {
                         if (!strokeoutdab)
-                            galaxywords.AddWords(message.Content, message.Author.Id);
+                            galaxywords.AddWords(message.Content, message.Author.Id, message.Channel.Id);
                     }
                     catch (Exception)
                     {
@@ -3375,6 +3375,7 @@ namespace DiscordBot
             }
             async void SaveTheGalaxy()
             {
+                galaxywords.UpdateWords();
                 using (Stream r = new FileStream(@"..\..\galaxy.words", FileMode.Create, FileAccess.Write))
                 {
                     f2.Serialize(r, galaxywords);
@@ -3389,6 +3390,10 @@ namespace DiscordBot
                 while (yeetem[0] == ' ')
                 {
                     yeetem = yeetem.Remove(0, 1);
+                    if (yeetem.Length == 0)
+                    {
+                        return;
+                    }
                 }
             }
             void RemoveFilledSpace(ref string yeetem)
@@ -3400,6 +3405,10 @@ namespace DiscordBot
                 while (yeetem[0] != ' ')
                 {
                     yeetem = yeetem.Remove(0, 1);
+                    if (yeetem.Length == 0)
+                    {
+                        return;
+                    }
                 }
             }
             bool NumberStuff(ref int tempnum, ref StringBuilder stronks, ref string yeetem, ref int mo, ref int y, ref int mi, ref int d, ref int h, ref int s, bool nospace, ref bool daily, ref bool weekly, ref bool monthly, ref bool yearly)
