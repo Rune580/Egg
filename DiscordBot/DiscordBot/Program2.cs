@@ -216,6 +216,10 @@ namespace DiscordBot
             }
             #endregion
             #region Banned Commands
+            BannedCommands.Add("GALAXY BAN LIST");
+            BannedCommands.Add("GALAXYBANLIST");
+            BannedCommands.Add("GALAXYBLACKLIST");
+            BannedCommands.Add("GALAXY BLACKLIST");
             BannedCommands.Add("GALAXYOPTOUT");
             BannedCommands.Add("GALAXY OPT OUT");
             BannedCommands.Add("GALAXY STROKE");
@@ -420,6 +424,50 @@ namespace DiscordBot
                                 else
                                 {
                                     await message.Channel.SendMessageAsync(CustomMessage);
+                                }
+                            }
+                            else if (TheMessage.StartsWith("GALAXYBLACKLIST") || TheMessage.StartsWith("GALAXY BLACKLIST"))
+                            {
+                                strokeoutdab = true;
+                                StringBuilder sb = new StringBuilder();
+                                if (message.MentionedUsers.Count != 0)
+                                {
+                                    foreach (var item in message.MentionedUsers)
+                                    {
+                                        if (item.IsBot)
+                                        {
+                                            if (galaxywords.optOut(item.Id))
+                                            {
+                                                sb.Append($"<@{item.Id}> has been added to the blacklist.\n");
+                                            }
+                                            else
+                                            {
+                                                sb.Append($"<@{item.Id}> has been removed from the blacklist.\n");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            sb.Append($"<@{item.Id}> has been ignored since you can't force someone to be blacklisted.\n");
+                                        }
+                                    }
+                                    sb.Append("\nType GalaxyBanList in a debug channel to see all blacklisted users.");
+                                }
+                                else
+                                {
+                                    TheMessage = TheMessage.Remove(0, "GALAXYBLACKLIST".Length);
+                                    RemoveFilledSpace(ref TheMessage);
+                                    RemoveWhiteSpace(ref TheMessage);
+                                    galaxywords.BanWords(TheMessage);
+                                    sb.Append("Words banned/unbanned! Type GalaxyBanList in a debug channel to see all banned words.");
+                                }
+                                await message.Channel.SendMessageAsync(sb.ToString());
+                            }
+                            else if (TheMessage.StartsWith("GALAXYBANLIST") || TheMessage.StartsWith("GALAXY BAN LIST"))
+                            {
+                                strokeoutdab = true;
+                                if (!galaxywords.GalaxyBanList(message, Client))
+                                {
+                                    await message.Channel.SendMessageAsync($"Channel not setup for debugging, pinging <@{MyID}> to fix this.");
                                 }
                             }
                             else if (TheMessage.StartsWith("GALAXY OPT OUT") || TheMessage.StartsWith("GALAXYOPTOUT"))

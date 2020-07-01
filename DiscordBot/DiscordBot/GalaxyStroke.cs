@@ -18,6 +18,7 @@ namespace DiscordBot
     {
         public List<ulong> optedout = new List<ulong>();
         public List<ulong> boundchannels = new List<ulong>();
+        public List<string> bannedwords = new List<string>();
         public List<GalaxyWord> words = new List<GalaxyWord>();
         public void AddWords(string input, ulong id, ulong channel)
         {
@@ -27,10 +28,28 @@ namespace DiscordBot
                 string[] yeet = input.Split(' ');
                 foreach (var item in yeet)
                 {
-                    GalaxyWord temp;
-                    temp.word = item;
-                    temp.timestamp = time;
-                    words.Add(temp);
+                    if (!bannedwords.Contains(item.ToUpper()))
+                    {
+                        GalaxyWord temp;
+                        temp.word = item;
+                        temp.timestamp = time;
+                        words.Add(temp);
+                    }
+                }
+            }
+        }
+        public void BanWords(string input)
+        {
+            string[] yeet = input.Split(' ');
+            foreach (var item in yeet)
+            {
+                if (!bannedwords.Contains(item))
+                {
+                    bannedwords.Add(item);
+                }
+                else
+                {
+                    bannedwords.Remove(item);
                 }
             }
         }
@@ -120,6 +139,61 @@ namespace DiscordBot
                     else
                     {
                         sb.Append($"{words[i].word} ");
+                    }
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool GalaxyBanList(SocketMessage m, DiscordSocketClient c)
+        {
+            if (boundchannels.Contains(m.Channel.Id))
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("```Blacklisted Users:\n");
+                for (int i = 0; i < optedout.Count; i++)
+                {
+                    string name = c.GetUser(optedout[i]).Username;
+                    if (sb.Length + name.Length + 3 > 2000)
+                    {
+                        sb.Append("```");
+                        m.Channel.SendMessageAsync(sb.ToString());
+                        sb.Clear();
+                        sb.Append($"```");
+                    }
+                    if (i == optedout.Count - 1)
+                    {
+                        sb.Append($"{name}```");
+                        m.Channel.SendMessageAsync(sb.ToString());
+                        sb.Clear();
+                    }
+                    else
+                    {
+                        sb.Append($"{name}\n");
+                    }
+                }
+                sb.Append("```Blacklisted Words:\n");
+                for (int i = 0; i < bannedwords.Count; i++)
+                {
+                    if (sb.Length + bannedwords[i].Length + 3 > 2000)
+                    {
+                        sb.Append("```");
+                        m.Channel.SendMessageAsync(sb.ToString());
+                        sb.Clear();
+                        sb.Append($"```");
+                    }
+                    if (i == optedout.Count - 1)
+                    {
+                        sb.Append($"{bannedwords[i]}```");
+                        m.Channel.SendMessageAsync(sb.ToString());
+                    }
+                    else
+                    {
+                        sb.Append($"{bannedwords[i]} ");
                     }
                 }
                 return true;
