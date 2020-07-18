@@ -176,6 +176,10 @@ namespace DiscordBot
                         sb.Append($"{name}\n");
                     }
                 }
+                if (optedout.Count == 0)
+                {
+                    sb.Clear();
+                }
                 sb.Append("```Blacklisted Words:\n");
                 for (int i = 0; i < bannedwords.Count; i++)
                 {
@@ -186,7 +190,7 @@ namespace DiscordBot
                         sb.Clear();
                         sb.Append($"```");
                     }
-                    if (i == optedout.Count - 1)
+                    if (i == bannedwords.Count - 1)
                     {
                         sb.Append($"{bannedwords[i]}```");
                         m.Channel.SendMessageAsync(sb.ToString());

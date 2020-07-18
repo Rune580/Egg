@@ -401,7 +401,7 @@ namespace DiscordBot
                                 break;
                             }
                         }
-                        if (user.Id != Egg && !badmessage && user.Id != 674716175716057103 && (user.Id != 200066011616116737 && message.Channel.Id != 658445283491053600))
+                        if (user.Id != Egg && !badmessage && user.Id != 674716175716057103)
                         {
                             //Anywhere
                             #region Anywhere
