@@ -123,6 +123,7 @@ namespace DiscordBot
         public static List<RemindMe> reminders = new List<RemindMe>();
         public static int cyear = DateTime.Now.Year, cmonth = DateTime.Now.Month, cday = DateTime.Now.Day, chour = DateTime.Now.Hour, cminute = DateTime.Now.Minute, csecond = DateTime.Now.Second;
         public static GalaxyStroke galaxywords = new GalaxyStroke();
+        public static List<ulong> nodads = new List<ulong>();
         #endregion
         static void Main(string[] args)
         {
@@ -214,8 +215,19 @@ namespace DiscordBot
                     galaxywords = (GalaxyStroke)f2.Deserialize(r);
                 }
             }
+            if (File.Exists(@"..\..\daddydaddy.doo"))
+            {
+                using (Stream r = new FileStream(@"..\..\daddydaddy.doo", FileMode.Open, FileAccess.Read))
+                {
+                    nodads = (List<ulong>)f2.Deserialize(r);
+                }
+            }
             #endregion
             #region Banned Commands
+            BannedCommands.Add("YES DAD");
+            BannedCommands.Add("YESDAD");
+            BannedCommands.Add("NO DAD");
+            BannedCommands.Add("NODAD");
             BannedCommands.Add("GALAXY BAN LIST");
             BannedCommands.Add("GALAXYBANLIST");
             BannedCommands.Add("GALAXYBLACKLIST");
@@ -401,10 +413,43 @@ namespace DiscordBot
                                 break;
                             }
                         }
-                        if (user.Id != Egg && !badmessage && user.Id != 674716175716057103)
+                        if (user.Id != Egg && !badmessage && user.Id != 674716175716057103 && !user.IsWebhook)
                         {
                             //Anywhere
                             #region Anywhere
+                            if (TheMessage.Contains("I'M ") || TheMessage.Contains("IM "))
+                            {
+                                if (!nodads.Contains(message.Author.Id))
+                                {
+                                    string bigsextemp = GetIm(message);
+                                    if (bigsextemp != "")
+                                    {
+                                        var hook = (message.Channel as SocketTextChannel).CreateWebhookAsync("Daddy");
+                                        Image im = new Image($@"..\..\dad.jpg");
+                                        Random r = new Random();
+                                        int num = r.Next() % 100;
+                                        await hook.Result.ModifyAsync(x =>
+                                        {
+                                            if (num == 0)
+                                            {
+                                                x.Name = "Daddy Bot";
+                                            }
+                                            else if (num == 1)
+                                            {
+                                                x.Name = "Father Bot";
+                                            }
+                                            else
+                                            {
+                                                x.Name = "Dad Bot";
+                                            }
+                                            x.Image = im;
+                                        });
+                                        DiscordWebhookClient d = new DiscordWebhookClient(hook.Result);
+                                        await d.SendMessageAsync(bigsextemp);
+                                        await d.DeleteWebhookAsync();
+                                    }
+                                }
+                            }
                             if (TheMessage.StartsWith("PLAY "))
                             {
                                 //PlaySong(TheMessageNormal, user);
@@ -425,6 +470,54 @@ namespace DiscordBot
                                 {
                                     await message.Channel.SendMessageAsync(CustomMessage);
                                 }
+                            }
+                            else if (TheMessage.Equals("NODAD") || TheMessage.Equals("NO DAD"))
+                            {
+                                string t;
+                                var hook = (message.Channel as SocketTextChannel).CreateWebhookAsync("Daddy");
+                                Image im = new Image($@"..\..\dad.jpg");
+                                await hook.Result.ModifyAsync(x =>
+                                {
+                                    x.Name = "Dad Bot";
+                                    x.Image = im;
+                                });
+                                DiscordWebhookClient d = new DiscordWebhookClient(hook.Result);
+                                if (!nodads.Contains(message.Author.Id))
+                                {
+                                    nodads.Add(message.Author.Id);
+                                    t = "*slowly sets down shotgun*";
+                                    SaveDaddy();
+                                }
+                                else
+                                {
+                                    t = "*the shotgun is already down*";
+                                }
+                                await d.SendMessageAsync(t);
+                                await d.DeleteWebhookAsync();
+                            }
+                            else if (TheMessage.Equals("YESDAD") || TheMessage.Equals("YES DAD"))
+                            {
+                                string t;
+                                var hook = (message.Channel as SocketTextChannel).CreateWebhookAsync("Daddy");
+                                Image im = new Image($@"..\..\dad.jpg");
+                                await hook.Result.ModifyAsync(x =>
+                                {
+                                    x.Name = "Dad Bot";
+                                    x.Image = im;
+                                });
+                                DiscordWebhookClient d = new DiscordWebhookClient(hook.Result);
+                                if (nodads.Contains(message.Author.Id))
+                                {
+                                    nodads.Remove(message.Author.Id);
+                                    t = "*slowly picks up shotgun*";
+                                    SaveDaddy();
+                                }
+                                else
+                                {
+                                    t = "*the shotgun is already prepared*";
+                                }
+                                await d.SendMessageAsync(t);
+                                await d.DeleteWebhookAsync();
                             }
                             else if (TheMessage.StartsWith("GALAXYBLACKLIST") || TheMessage.StartsWith("GALAXY BLACKLIST"))
                             {
@@ -2266,6 +2359,7 @@ namespace DiscordBot
                                     sb.Append($"Create Reminders\nCreate reminders for yourself\nExample Usage: RemindMe 2 hours ^ yeet\nType RemindersHelp for more info and technicalities.\n\n");
                                     sb.Append($"Super Stroke!\nCombine the previous 3 messages in a random order.\nExample usage: superstroke\n\n");
                                     sb.Append($"Galaxy Stroke!\nCombine some amount of words said in the past 24 hours (default 30 words if not specified) in a random order. Type 'Galaxy Debug' for more info.\nExample usage: Galaxy Stroke 50\n\n");
+                                    sb.Append($"Opt Out of Dad Commands.\nSelf explanitory.\nExample usage: 'NO DAD' or 'YES DAD'\n\n");
                                     //sb.Append($"\n\n");
                                     sb.Append($"``");
                                     await message.Channel.SendMessageAsync(sb.ToString());
@@ -3428,6 +3522,62 @@ namespace DiscordBot
                 {
                     f2.Serialize(r, galaxywords);
                 }
+            }
+            async void SaveDaddy()
+            {
+                using (Stream r = new FileStream(@"..\..\daddydaddy.doo", FileMode.Create, FileAccess.Write))
+                {
+                    f2.Serialize(r, nodads);
+                }
+            }
+            string GetIm(SocketMessage m)
+            {
+                List<string> s = m.Content.Split(' ').ToList<string>();
+                while (s[0].ToUpper() != "IM" && s[0].ToUpper() != "I'M")
+                {
+                    s.RemoveAt(0);
+                }
+                s.RemoveAt(0);
+                if (s.Count != 0)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    if (s.Count == 1 && s[0].ToUpper() == "DAD")
+                    {
+                        sb.Append("You're not dad, I'm dad!");
+                        return sb.ToString();
+                    }
+                    sb.Append("Hi");
+                    foreach (var item in s)
+                    {
+                        sb.Append($" {item}");
+                    }
+                    Random rand = new Random();
+                    int num = rand.Next() % 100;
+                    if (num == 0)
+                    {
+                        sb.Clear();
+                        sb.Append("You're not");
+                        foreach (var item in s)
+                        {
+                            sb.Append($" {item}");
+                        }
+                        sb.Append(", You're a dissapointment!");
+                    }
+                    else if (num == 1)
+                    {
+                        sb.Append(", I'm gay!");
+                    }
+                    else if (num == 2)
+                    {
+                        sb.Append(", I'm critically depressed!");
+                    }
+                    else
+                    {
+                        sb.Append(", I'm dad!");
+                    }
+                    return sb.ToString();
+                }
+                return "";
             }
             void RemoveWhiteSpace(ref string yeetem)
             {

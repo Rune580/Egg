@@ -575,14 +575,11 @@ C:\Users\dwelx\Desktop\Egg\DiscordBot\DiscordBot\bin\Debug\System.Reactive.Linq.
 C:\Users\dwelx\Desktop\Egg\DiscordBot\DiscordBot\bin\Debug\System.Reactive.PlatformServices.xml
 I:\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.csprojAssemblyReference.cache
 I:\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.exe.config
-I:\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.csproj.CoreCompileInputs.cache
 I:\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.exe
 I:\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.pdb
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\BYE.png
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\smashmouth.json
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\DiscordBot.exe.config
-I:\Egg\DiscordBot\DiscordBot\bin\Debug\DiscordBot.exe.manifest
-I:\Egg\DiscordBot\DiscordBot\bin\Debug\DiscordBot.application
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\DiscordBot.exe
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\DiscordBot.pdb
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.Data.Common.dll
@@ -674,6 +671,4 @@ I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.Reactive.Linq.xml
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.Reactive.PlatformServices.xml
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.Runtime.CompilerServices.Unsafe.xml
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.ValueTuple.xml
-I:\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.exe.manifest
-I:\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.application
 I:\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.csproj.CopyComplete
