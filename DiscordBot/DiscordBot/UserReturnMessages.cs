@@ -23,7 +23,7 @@ namespace DiscordBot
             LoadCommands();
             LoadOwners();
         }
-        public bool AddCheck(SocketMessage message, string _Trigger, string[] _Return, bool _Contains, ulong asUserID)
+        public bool AddCheck(SocketMessage message, string _Trigger, string[] _Return, bool _Contains, List<ulong> asUserID)
         {
             for (int i = 0; i <= commands.Count; i++)
             {
@@ -32,7 +32,7 @@ namespace DiscordBot
                     AddCommand(_Trigger, _Return, _Contains, asUserID);
                     return true;
                 }
-                else if(commands[i].Trigger.ToUpper() == _Trigger.ToUpper())
+                else if (commands[i].Trigger.ToUpper() == _Trigger.ToUpper())
                 {
                     message.Channel.SendMessageAsync($"The trigger [{_Trigger}] already exists. \nIf you want to replace it with your new command type [OVERRIDE]\nIf you want to append the existing command type [APPEND]\nType anything else and this will cancel the command addition.");
                     return false;
@@ -40,7 +40,7 @@ namespace DiscordBot
             }
             return false;
         }
-        public void AddCommand(string _Trigger, string[] _Return, bool _Contains, ulong _asPerson)
+        public void AddCommand(string _Trigger, string[] _Return, bool _Contains, List<ulong> _asPerson)
         {
             ReturnCommands temp = new ReturnCommands(_Trigger, _Return, _Contains, _asPerson);
             for (int i = 0; i <= commands.Count; i++)
@@ -115,7 +115,9 @@ namespace DiscordBot
                                 }
                             }
                         }
-                        AddCommand(_Trigger, TempList.ToArray(), _Contains, 0);
+                        List<ulong> yeet = new List<ulong>();
+                        yeet.Add(69);
+                        AddCommand(_Trigger, TempList.ToArray(), _Contains, yeet);
                     }
                     else if (i % 4 == 2)
                     {
@@ -124,7 +126,16 @@ namespace DiscordBot
                     }
                     else if (i % 4 == 3)
                     {
-                        ToggleAsMe(_Trigger, ulong.Parse(lines[i]));
+                        string[] yeet = lines[i].Split('∰');
+                        List<ulong> yeet2 = new List<ulong>();
+                        foreach (var item in yeet)
+                        {
+                            if (item != "")
+                            {
+                                yeet2.Add(ulong.Parse(item));
+                            }
+                        }
+                        ToggleAsMe(_Trigger, yeet2, false);
                     }
                 }
             }
@@ -149,7 +160,10 @@ namespace DiscordBot
                         r.Write("ª");
                         r.Write(item.Owner);
                         r.Write("ª");
-                        r.Write(item.asPerson);
+                        foreach (var thing in item.asPerson)
+                        {
+                            r.Write($"{thing}∰");
+                        }
                         r.Write("ª");
                     }
                 }
@@ -285,8 +299,8 @@ namespace DiscordBot
                     if (_Trigger.ToUpper().Contains($"{item.Trigger.ToUpper()}"))
                     {
                         Random random = new Random();
-                        int RanReturn = random.Next(item.Return.Count());
-                        return item.asPerson;
+                        int RanReturn = random.Next(item.asPerson.Count());
+                        return item.asPerson[RanReturn];
                     }
                 }
                 else
@@ -294,8 +308,8 @@ namespace DiscordBot
                     if (_Trigger.ToUpper() == item.Trigger.ToUpper())
                     {
                         Random random = new Random();
-                        int RanReturn = random.Next(item.Return.Count());
-                        return item.asPerson;
+                        int RanReturn = random.Next(item.asPerson.Count());
+                        return item.asPerson[RanReturn];
                     }
                 }
             }
@@ -345,13 +359,45 @@ namespace DiscordBot
             }
             return null;
         }
-        public ReturnCommands ToggleAsMe(string _Trigger, ulong ID)
+        public ReturnCommands ToggleAsMe(string _Trigger, List<ulong> ID, bool remove)
         {
             foreach (var item in commands)
             {
                 if (_Trigger.ToUpper() == item.Trigger.ToUpper())
                 {
-                    item.asPerson = ID;
+                    foreach (var item2 in ID)
+                    {
+                        if (remove)
+                        {
+                            if (item.asPerson.Contains(item2))
+                            {
+                                item.asPerson.Remove(item2);
+                            }
+                        }
+                        else
+                        {
+                            if (!item.asPerson.Contains(item2))
+                            {
+                                item.asPerson.Add(item2);
+                            }
+                        }
+
+                    }
+                    if (item.asPerson.Count > 0)
+                    {
+                        for (int i = 0; i < item.asPerson.Count; i++)
+                        {
+                            if (item.asPerson[i] < 100000)
+                            {
+                                item.asPerson.RemoveAt(i);
+                                i--;
+                            }
+                        }
+                    }
+                    if (item.asPerson.Count == 0)
+                    {
+                        item.asPerson.Add(0);
+                    }
                     SaveCommands();
                     return item;
                 }
@@ -387,7 +433,7 @@ namespace DiscordBot
             }
             return "";
         }
-        async public void GetCommand(string _Trigger, SocketMessage message)
+        async public void GetCommand(string _Trigger, SocketMessage message, DiscordSocketClient client)
         {
             int _Duplicates = 0;
             foreach (var command in commands)
@@ -443,6 +489,37 @@ namespace DiscordBot
                     }
                     sb.Append("```");
                     Console.WriteLine(sb.ToString());
+                    await message.Channel.SendMessageAsync(sb.ToString());
+                    sb.Clear();
+                    sb.Append($"__**Total Sender Count: {command.asPerson.Count()}**__```");
+                    foreach (var item in command.asPerson)
+                    {
+                        foreach (var g in client.Guilds)
+                        {
+                            foreach (var c in g.TextChannels)
+                            {
+                                if (c == message.Channel)
+                                {
+                                    try
+                                    {
+                                        if (g.GetUser(item).Nickname != null)
+                                        {
+                                            sb.Append($"\n{g.GetUser(item).Nickname}");
+                                        }
+                                        else
+                                        {
+                                            sb.Append($"\n{client.GetUser(item).Username}");
+                                        }
+                                    }
+                                    catch (Exception)
+                                    {
+                                        sb.Append($"\n{client.GetUser(item).Username}");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    sb.Append("```");
                     await message.Channel.SendMessageAsync(sb.ToString());
                 }
             }
@@ -532,7 +609,7 @@ namespace DiscordBot
                                 if (userthing.ID == ID && userthing.Return.Length == 0)
                                 {
 
-                            await message.Channel.SendMessageAsync("You are almost done! If you want you can leave this as is, but if you want, use AddMessage to leave a reply for those who wish to tamper with your commands. For more info, type MessageHelp");
+                                    await message.Channel.SendMessageAsync("You are almost done! If you want you can leave this as is, but if you want, use AddMessage to leave a reply for those who wish to tamper with your commands. For more info, type MessageHelp");
                                 }
                             }
                         }
@@ -896,7 +973,7 @@ namespace DiscordBot
     }
     public class ReturnCommands
     {
-        public ReturnCommands(string _Trigger, string[] _Return, bool _Contains, ulong _asPerson)
+        public ReturnCommands(string _Trigger, string[] _Return, bool _Contains, List<ulong> _asPerson)
         {
             Trigger = _Trigger;
             Return = _Return;
@@ -907,7 +984,7 @@ namespace DiscordBot
         public string[] Return;
         public bool Contains;
         public ulong Owner;
-        public ulong asPerson;
+        public List<ulong> asPerson;
     }
     public class Owners
     {

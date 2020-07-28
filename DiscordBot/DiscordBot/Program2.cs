@@ -34,7 +34,7 @@ namespace DiscordBot
         public string[] Return;
         public bool include;
         public ulong ID;
-        public ulong asMeID;
+        public List<ulong> asMeID;
     };
     class Program2
     {
@@ -1536,7 +1536,7 @@ namespace DiscordBot
                                 {
                                     TheMessage = TheMessage.Remove(TheMessage.Count() - 1, 1);
                                 }
-                                CustomCommands.GetCommand(TheMessage, message);
+                                CustomCommands.GetCommand(TheMessage, message, Client);
                             }
                             else if (TheMessage.StartsWith("REVERSESEARCH"))
                             {
@@ -1601,6 +1601,58 @@ namespace DiscordBot
                             {
                                 musicManager.ConnectToChannel(((user as IGuildUser).VoiceChannel as SocketVoiceChannel));
                             }
+                            else if ((TheMessage.StartsWith("UNASSIGNPERSON") || TheMessage.StartsWith("UNASSIGN PERSON") || TheMessage.StartsWith("UNASSIGNUSER") || TheMessage.StartsWith("UNASSIGN USER")) && TheMessage.Contains('^'))
+                            {
+                                TheMessage = TheMessage.Remove(0, "UNASSIGNUS".Length);
+                                RemoveFilledSpace(ref TheMessage);
+                                RemoveWhiteSpace(ref TheMessage);
+                                string[] twosides = TheMessage.Split('^');
+                                for (int i = 0; i < twosides.Length; i++)
+                                {
+                                    RemoveWhiteSpace(ref twosides[i]);
+                                    while (twosides[i][twosides[i].Length - 1] == ' ')
+                                    {
+                                        twosides[i] = twosides[i].Remove(twosides[i].Length - 1, 1);
+                                    }
+                                }
+                                if (CustomCommands.IsIn(twosides[0]))
+                                {
+                                    List<ulong> ids = new List<ulong>();
+                                    if (message.MentionedUsers.Count == 0)
+                                    {
+                                        string[] ulongs = twosides[1].Split(' ');
+                                        foreach (var item in ulongs)
+                                        {
+                                            ids.Add(ulong.Parse(item));
+                                        }
+                                        CustomCommands.ToggleAsMe(twosides[0], ids, true);
+                                        if (ids.Count == 1)
+                                        {
+                                            await message.Channel.SendMessageAsync("User removed from command!");
+                                        }
+                                        else
+                                        {
+                                            await message.Channel.SendMessageAsync("Users removed from command!");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        foreach (var item in message.MentionedUsers)
+                                        {
+                                            ids.Add(item.Id);
+                                        }
+                                        CustomCommands.ToggleAsMe(twosides[0], ids, true);
+                                        if (ids.Count == 1)
+                                        {
+                                            await message.Channel.SendMessageAsync("User removed from command!");
+                                        }
+                                        else
+                                        {
+                                            await message.Channel.SendMessageAsync("Users removed from command!");
+                                        }
+                                    }
+                                }
+                            }
                             else if ((TheMessage.StartsWith("ASSIGNPERSON") || TheMessage.StartsWith("ASSIGN PERSON") || TheMessage.StartsWith("ASSIGNUSER") || TheMessage.StartsWith("ASSIGN USER")) && TheMessage.Contains('^'))
                             {
                                 TheMessage = TheMessage.Remove(0, "ASSIGNUS".Length);
@@ -1617,18 +1669,39 @@ namespace DiscordBot
                                 }
                                 if (CustomCommands.IsIn(twosides[0]))
                                 {
+                                    List<ulong> ids = new List<ulong>();
                                     if (message.MentionedUsers.Count == 0)
                                     {
-                                        CustomCommands.ToggleAsMe(twosides[0], ulong.Parse(twosides[1]));
-                                        await message.Channel.SendMessageAsync("User selected for command!");
+                                        string[] ulongs = twosides[1].Split(' ');
+                                        foreach (var item in ulongs)
+                                        {
+                                            ids.Add(ulong.Parse(item));
+                                        }
+                                        CustomCommands.ToggleAsMe(twosides[0], ids, false);
+                                        if (ids.Count == 1)
+                                        {
+                                            await message.Channel.SendMessageAsync("User selected for command!");
+                                        }
+                                        else
+                                        {
+                                            await message.Channel.SendMessageAsync("Users selected for command!");
+                                        }
                                     }
                                     else
                                     {
                                         foreach (var item in message.MentionedUsers)
                                         {
-                                            CustomCommands.ToggleAsMe(twosides[0], item.Id);
+                                            ids.Add(item.Id);
                                         }
-                                        await message.Channel.SendMessageAsync("User selected for command!");
+                                        CustomCommands.ToggleAsMe(twosides[0], ids, false);
+                                        if (ids.Count == 1)
+                                        {
+                                            await message.Channel.SendMessageAsync("User selected for command!");
+                                        }
+                                        else
+                                        {
+                                            await message.Channel.SendMessageAsync("Users selected for command!");
+                                        }
                                     }
                                 }
                             }
@@ -1638,7 +1711,7 @@ namespace DiscordBot
                                 string _Trigger;
                                 string[] _Return;
                                 bool _Contains = false;
-                                ulong userID = 0;
+                                List<ulong> userID = new List<ulong>();
                                 if (TheMessage.StartsWith("ADDCOMMAND"))
                                 {
                                     TheMessageNormal = TheMessageNormal.Remove(0, 10);
@@ -1690,10 +1763,14 @@ namespace DiscordBot
                                 }
                                 if (_Return[0].ToUpper() == "TRUE")
                                 {
-                                    userID = message.Author.Id;
+                                    userID.Add(message.Author.Id);
                                     List<string> _TempList = _Return.ToList();
                                     _TempList.RemoveAt(0);
                                     _Return = _TempList.ToArray();
+                                }
+                                else
+                                {
+                                    userID.Add(69);
                                 }
                                 if (!BannedCommands.Contains(_Trigger.ToUpper()))
                                 {
@@ -1731,7 +1808,7 @@ namespace DiscordBot
                                 string _Trigger;
                                 string[] _Return;
                                 bool _Contains = false;
-                                ulong userID = 0;
+                                List<ulong> userID = new List<ulong>();
                                 TheMessageNormal = TheMessageNormal.Remove(0, 13);
                                 while (TheMessageNormal[0] == ' ')
                                 {
@@ -1784,10 +1861,14 @@ namespace DiscordBot
                                     }
                                     if (_Return[0].ToUpper() == "TRUE")
                                     {
-                                        userID = message.Author.Id;
+                                        userID.Add(message.Author.Id);
                                         List<string> _TempList = _Return.ToList();
                                         _TempList.RemoveAt(0);
                                         _Return = _TempList.ToArray();
+                                    }
+                                    else
+                                    {
+                                        userID.Add(69);
                                     }
                                     if (!BannedCommands.Contains(_Trigger))
                                     {
