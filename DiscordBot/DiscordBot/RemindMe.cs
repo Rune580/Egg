@@ -8,6 +8,103 @@ using System.Threading.Tasks;
 namespace DiscordBot
 {
     [Serializable]
+    public class Alias
+    {
+        public string input;
+        public List<string> output;
+    }
+    [Serializable]
+    public class AliasManager
+    {
+        public List<Alias> aliases = new List<Alias>();
+        List<string> decode(string s)
+        {
+            foreach (var item in aliases)
+            {
+                if (item.input.ToUpper() == s.ToUpper())
+                {
+                    foreach (var item2 in item.output)
+                    {
+                        if (item2.ToUpper() == "N/A")
+                        {
+                            return new List<string>();
+                        }
+                    }
+                    return item.output;
+                }
+            }
+            List<string> error = new List<string>();
+            error.Add(s);
+            return error;
+        }
+        public string ParseMessage(string m)
+        {
+            string[] defaultarray = m.Split(' ');
+            List<string> decoded = new List<string>();
+            foreach (var item in defaultarray)
+            {
+                List<string> temp = decode(item);
+                if (temp.Count > 0)
+                {
+                    decoded.AddRange(temp);
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            foreach (var item in decoded)
+            {
+                sb.Append($"{item} ");
+            }
+            return sb.ToString();
+        }
+        public string ParseReminder(string m, int time, int delim)
+        {
+            int tempnum = 0;
+            string[] defaultarray = m.Split(' ');
+            List<string> decoded = new List<string>();
+            StringBuilder sb = new StringBuilder();
+            if (time == 1)
+            {
+                foreach (var item in defaultarray)
+                {
+                    List<string> temp = decode(item);
+                    if (temp.Contains("^"))
+                    {
+                        tempnum++;
+                        if (tempnum == delim)
+                        {
+                            break;
+                        }
+                    }
+                    sb.Append(item + " ");
+                }
+            }
+            else
+            {
+                bool active = false;
+                foreach (var item in defaultarray)
+                {
+                    if (!active)
+                    {
+                        List<string> temp = decode(item);
+                        if (temp.Contains("^"))
+                        {
+                            if (tempnum == delim)
+                            {
+                                active = true;
+                            }
+                            tempnum++;
+                        }
+                    }
+                    else
+                    {
+                        sb.Append(item + " ");
+                    }
+                }
+            }
+            return sb.ToString();
+        }
+    }
+    [Serializable]
     class RemindMe
     {
         public int years, months, days, hours, minutes, seconds;
@@ -75,7 +172,7 @@ namespace DiscordBot
         public void Update(int secondChange)
         {
             seconds -= secondChange;
-            if (setyear < DateTime.Now.Year || 
+            if (setyear < DateTime.Now.Year ||
                 (setyear == DateTime.Now.Year && setmonth < DateTime.Now.Month) ||
                 (setyear == DateTime.Now.Year && setmonth == DateTime.Now.Month && setday < DateTime.Now.Day) ||
                 (setyear == DateTime.Now.Year && setmonth == DateTime.Now.Month && setday == DateTime.Now.Day && sethour < DateTime.Now.Hour) ||
