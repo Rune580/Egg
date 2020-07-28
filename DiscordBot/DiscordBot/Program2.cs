@@ -503,7 +503,6 @@ namespace DiscordBot
                                             var yes = Client.GetUser(userID).GetAvatarUrl();
                                             System.Drawing.Image image = DownloadImageFromUrl(yes.Trim());
                                             image.Save($@"..\..\{userID}image.png");
-                                            image.Dispose();
 
                                             var hook = (message.Channel as SocketTextChannel).CreateWebhookAsync("You Have Sexuals");
                                             Image im = new Image($@"..\..\{userID}image.png");
@@ -532,7 +531,6 @@ namespace DiscordBot
                                                                     x.Name = Client.GetUser(userID).Username;
                                                                 }
                                                                 x.Image = im;
-                                                                im.Dispose();
                                                             });
                                                         }
                                                         catch (Exception e3)
@@ -543,7 +541,6 @@ namespace DiscordBot
                                                             {
                                                                 x.Name = Client.GetUser(userID).Username;
                                                                 x.Image = im;
-                                                                im.Dispose();
                                                             });
                                                         }
                                                         DiscordWebhookClient d = new DiscordWebhookClient(hook.Result);
