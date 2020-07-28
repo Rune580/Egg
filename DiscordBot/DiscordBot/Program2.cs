@@ -34,6 +34,7 @@ namespace DiscordBot
         public string[] Return;
         public bool include;
         public ulong ID;
+        public ulong asMeID;
     };
     class Program2
     {
@@ -124,6 +125,10 @@ namespace DiscordBot
         public static int cyear = DateTime.Now.Year, cmonth = DateTime.Now.Month, cday = DateTime.Now.Day, chour = DateTime.Now.Hour, cminute = DateTime.Now.Minute, csecond = DateTime.Now.Second;
         public static GalaxyStroke galaxywords = new GalaxyStroke();
         public static List<ulong> nodads = new List<ulong>();
+        public static AliasManager manager = new AliasManager();
+        public static string tempalias = "";
+        public static List<string> tempout;
+        public static bool canudont = false;
         #endregion
         static void Main(string[] args)
         {
@@ -135,7 +140,6 @@ namespace DiscordBot
                 LogLevel = LogSeverity.Info
             });
 
-            //helphelphelphelp
             CommandService Commands;
             Commands = new CommandService(new CommandServiceConfig
             {
@@ -222,8 +226,31 @@ namespace DiscordBot
                     nodads = (List<ulong>)f2.Deserialize(r);
                 }
             }
+            if (File.Exists(@"..\..\aliases.yourmother"))
+            {
+                using (Stream r = new FileStream(@"..\..\aliases.yourmother", FileMode.Open, FileAccess.Read))
+                {
+                    manager = (AliasManager)f2.Deserialize(r);
+                }
+            }
             #endregion
             #region Banned Commands
+            BannedCommands.Add("ASSIGN USER");
+            BannedCommands.Add("ASSIGNUSER");
+            BannedCommands.Add("ASSIGN PERSON");
+            BannedCommands.Add("ASSIGNPERSON");
+            BannedCommands.Add("ALIAS HELP");
+            BannedCommands.Add("ALIASHELP");
+            BannedCommands.Add("REMOVE ALIAS");
+            BannedCommands.Add("REMOVEALIAS");
+            BannedCommands.Add("ADD ALIAS");
+            BannedCommands.Add("ADDALIAS");
+            BannedCommands.Add("DELETE ALIAS");
+            BannedCommands.Add("DELETEALIAS");
+            BannedCommands.Add("SHOW ALIASES");
+            BannedCommands.Add("SHOWALIASES");
+            BannedCommands.Add("CREATE ALIAS");
+            BannedCommands.Add("CREATEALIAS");
             BannedCommands.Add("YES DAD");
             BannedCommands.Add("YESDAD");
             BannedCommands.Add("NO DAD");
@@ -457,6 +484,7 @@ namespace DiscordBot
                             else if (CustomCommands.IsIn(CustomString) && !StartsWithBannedCommand)
                             {
                                 string CustomMessage = CustomCommands.ReturnIt(CustomString);
+                                ulong userID = CustomCommands.ReturnUser(CustomString);
                                 Console.WriteLine($"Detected: {CustomString} and is sending {CustomMessage.ToUpper()}");
                                 if (CustomMessage.ToUpper().StartsWith("PLAY "))
                                 {
@@ -468,7 +496,79 @@ namespace DiscordBot
                                 }
                                 else
                                 {
-                                    await message.Channel.SendMessageAsync(CustomMessage);
+                                    if (userID != 0)
+                                    {
+                                        try
+                                        {
+                                            var yes = Client.GetUser(userID).GetAvatarUrl();
+                                            System.Drawing.Image image = DownloadImageFromUrl(yes.Trim());
+                                            image.Save($@"..\..\{userID}image.png");
+                                            image.Dispose();
+
+                                            var hook = (message.Channel as SocketTextChannel).CreateWebhookAsync("You Have Sexuals");
+                                            Image im = new Image($@"..\..\{userID}image.png");
+                                            bool found = false;
+                                            foreach (var guild in Client.Guilds)
+                                            {
+                                                foreach (var channel in guild.Channels)
+                                                {
+                                                    if (channel == message.Channel)
+                                                    {
+                                                        try
+                                                        {
+                                                            await hook.Result.ModifyAsync(x =>
+                                                            {
+                                                                List<ulong> ids = new List<ulong>();
+                                                                foreach (var item in guild.Users)
+                                                                {
+                                                                    ids.Add(item.Id);
+                                                                }
+                                                                if (ids.Contains(userID))
+                                                                {
+                                                                    x.Name = guild.GetUser(userID).Nickname;
+                                                                }
+                                                                else
+                                                                {
+                                                                    x.Name = Client.GetUser(userID).Username;
+                                                                }
+                                                                x.Image = im;
+                                                                im.Dispose();
+                                                            });
+                                                        }
+                                                        catch (Exception e3)
+                                                        {
+                                                            Console.WriteLine(e3.Message);
+                                                            Console.WriteLine(e3.Source);
+                                                            await hook.Result.ModifyAsync(x =>
+                                                            {
+                                                                x.Name = Client.GetUser(userID).Username;
+                                                                x.Image = im;
+                                                                im.Dispose();
+                                                            });
+                                                        }
+                                                        DiscordWebhookClient d = new DiscordWebhookClient(hook.Result);
+                                                        await d.SendMessageAsync(CustomMessage);
+                                                        await d.DeleteWebhookAsync();
+                                                        found = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (found)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        catch (Exception e3)
+                                        {
+                                            Console.WriteLine(e3.Message);
+                                            await message.Channel.SendMessageAsync(CustomMessage);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        await message.Channel.SendMessageAsync(CustomMessage);
+                                    }
                                 }
                             }
                             else if (TheMessage.Equals("NODAD") || TheMessage.Equals("NO DAD"))
@@ -624,10 +724,134 @@ namespace DiscordBot
                                     await message.Channel.SendMessageAsync($"Channel not setup for debugging, pinging <@{MyID}> to fix this.");
                                 }
                             }
+                            else if (TheMessage.StartsWith("REMOVEALIAS") || TheMessage.StartsWith("REMOVE ALIAS") || TheMessage.StartsWith("DELETEALIAS") || TheMessage.StartsWith("DELETE ALIAS"))
+                            {
+                                TheMessage = TheMessage.Remove(0, "REMOVEALIA".Length);
+                                RemoveFilledSpace(ref TheMessage);
+                                RemoveWhiteSpace(ref TheMessage);
+                                bool yes = false;
+                                for (int i = 0; i < manager.aliases.Count; i++)
+                                {
+                                    if (manager.aliases[i].input.ToUpper() == TheMessage)
+                                    {
+                                        manager.aliases.RemoveAt(i);
+                                        await message.Channel.SendMessageAsync("Alias removed!");
+                                        yes = true;
+                                        break;
+                                    }
+                                }
+                                if (!yes)
+                                {
+                                    await message.Channel.SendMessageAsync("Alias not found.");
+                                }
+                                SaveAlias();
+                            }
+                            else if (TheMessage.StartsWith("CREATEALIAS") || TheMessage.StartsWith("CREATE ALIAS") || TheMessage.StartsWith("ADDALIAS") || TheMessage.StartsWith("ADD ALIAS"))
+                            {
+                                TheMessageNormal = TheMessageNormal.Remove(0, "CREATEA".Length);
+                                RemoveFilledSpace(ref TheMessageNormal);
+                                RemoveWhiteSpace(ref TheMessageNormal);
+                                Alias a = new Alias();
+                                string[] s = TheMessageNormal.Split('>');
+                                while (s[0][s[0].Length - 1] == ' ')
+                                {
+                                    s[0] = s[0].Remove(s[0].Length - 1, 1);
+                                }
+                                a.input = s[0];
+                                a.output = s[1].Split(' ').ToList();
+                                bool yes = false;
+                                foreach (var item in manager.aliases)
+                                {
+                                    if (item.input.ToUpper() == a.input.ToUpper())
+                                    {
+                                        yes = true;
+                                        break;
+                                    }
+                                }
+                                if (yes)
+                                {
+                                    await message.Channel.SendMessageAsync("Alias already exists.");
+                                }
+                                else
+                                {
+                                    await message.Channel.SendMessageAsync("Alias added! Would you like to add the plural version of this word? Y/N");
+                                    manager.aliases.Add(a);
+                                    SaveAlias();
+                                    canudont = true;
+                                    tempalias = a.input;
+                                    tempout = a.output;
+                                }
+                            }
+                            else if (TheMessage.Equals("SHOWALIASES") || TheMessage.Equals("SHOW ALIASES"))
+                            {
+                                StringBuilder sb = new StringBuilder();
+                                sb.Append("```\n");
+                                foreach (var item in manager.aliases)
+                                {
+                                    if (sb.Length > 1800)
+                                    {
+                                        sb.Append("```");
+                                        await message.Channel.SendMessageAsync(sb.ToString());
+                                        sb.Clear();
+                                        sb.Append("```");
+                                    }
+                                    sb.Append($"[ {item.input} ] expands to [");
+                                    foreach (var item2 in item.output)
+                                    {
+                                        sb.Append($"{item2} ");
+                                    }
+                                    sb.Append("]\n");
+                                }
+                                sb.Append("```");
+                                await message.Channel.SendMessageAsync(sb.ToString());
+                            }
+                            else if (TheMessage.Equals("ALIASHELP") || TheMessage.Equals("ALIAS HELP"))
+                            {
+                                string m = "When creating a reminder, you can call aliases which have been created by users. This is intended to make assigning a time to your reminder a much smoother experience. \n\nWhen creating an alias with ``Create Alias``, keep in mind the syntax is as follows: ``Create Alias input > output`` where input is a word with no spaces, and output can be anything really, bearing in mind neither of these can contain ``>`` \n\nHere is a list of suggestions/ guidelines for the output \n\n```^ == delimiter between how much time and the reminder message \nyears / months / weeks / days / hours / minutes / seconds == self explanatory I hope \n\nExamples: \ncreatealias sexual > 1 minute 2 seconds \ncreatealias kevin > 2 hours \ncreatealias browning > 69 seconds \ncreatealias BIG > 10 years 69 months 2 weeks 1 minute 7 seconds \ncreatealias like > n/a <----(n/a gets interperated as nothing at runtime)```";
+                                await message.Channel.SendMessageAsync(m);
+                            }
+                            else if (TheMessage.Equals("Y") && tempalias != "")
+                            {
+                                if (tempalias.ToUpper().EndsWith("S"))
+                                {
+                                    tempalias += "es";
+                                }
+                                else if (tempalias.ToUpper().EndsWith("Y"))
+                                {
+                                    tempalias = tempalias.Remove(tempalias.Length - 1, 1);
+                                    tempalias += "ies";
+                                }
+                                else
+                                {
+                                    tempalias += "s";
+                                }
+                                Alias a = new Alias();
+                                a.input = tempalias;
+                                a.output = tempout;
+                                bool yes = false;
+                                foreach (var item in manager.aliases)
+                                {
+                                    if (item.input.ToUpper() == a.input.ToUpper())
+                                    {
+                                        yes = true;
+                                        break;
+                                    }
+                                }
+                                if (yes)
+                                {
+                                    await message.Channel.SendMessageAsync("Plural alias already exists.");
+                                }
+                                else
+                                {
+                                    await message.Channel.SendMessageAsync("Plural alias added!");
+                                    manager.aliases.Add(a);
+                                    SaveAlias();
+                                }
+                            }
                             else if (TheMessage.StartsWith("REMINDERS HELP") || TheMessage.StartsWith("REMINDERSHELP") || TheMessage.StartsWith("REMINDER HELP") || TheMessage.StartsWith("REMINDERHELP"))
                             {
-                                message.Channel.SendMessageAsync($"```Create a Reminder!\nCreate a reminder for yourself, this reminder will be bound the the channel you create it it.\nExample: RemindMe 2 hours 1 minute 30 seconds ^ Get Laundry\n" +
-                                    $"Technically speaking, you only need the key identifiers for the type of time you are specifying, for example saying sexual is the same as saying seconds, however, keep in mind that you cannot have spaces and in the case of minutes/months, you have to specify at least the first 2 characters.\n" +
+                                await message.Channel.SendMessageAsync($"```Create a Reminder!\nCreate a reminder for yourself, this reminder will be bound the the channel you create it it.\nExample: RemindMe 2 hours 1 minute 30 seconds ^ Get Laundry\n" +
+                                    $"You can also create aliases for words to be interperated as for the timing portion of this command, this can be done by using CreateAlias. Type AliasHelp for more info.\n" +
                                     $"To see all reminders in this channel, use Reminders```");
                             }
                             else if ((TheMessage.Contains("REMINDME") || TheMessage.Contains("!REMINDME") || TheMessage.Contains("CREATE REMINDER") || TheMessage.Contains("CREATEREMINDER") || TheMessage.Contains("REMIND ME")))
@@ -637,19 +861,163 @@ namespace DiscordBot
                                     TheMessage = TheMessage.Remove(0, 1);
                                     TheMessageNormal = TheMessageNormal.Remove(0, 1);
                                 }
-                                if ((!TheMessage.Contains('^') && !TheMessage.Contains(" TO ")) && (!(TheMessage.Contains("ABOUT") || TheMessage.Contains("THAT") || TheMessage.Contains("TO")) && !(TheMessage.Contains("IN") || TheMessage.Contains("AFTER") || TheMessage.Contains('^'))))
+                                int y = 0, mo = 0, d = 0, h = 0, mi = 0, s = 0;
+                                bool daily = false, weekly = false, monthly = false, yearly = false;
+                                string yeetem = TheMessageNormal.Remove(0, "REMINDME".Length);
+                                RemoveFilledSpace(ref yeetem);
+                                RemoveWhiteSpace(ref yeetem);
+                                string notyeetem = manager.ParseMessage(yeetem);
+                                int delimnumber1 = 0, delimnumber2 = 0;
+                                int time = 0;
+                                int delimeter = 0;
+                                if (notyeetem.Contains('^'))
                                 {
-                                    message.Channel.SendMessageAsync("Make sure to seperate your desired time and your message with a '^' or the word ' to ' (with spaces)");
+                                    for (int i = 0; i < notyeetem.Length; i++)
+                                    {
+                                        if (notyeetem[i] == '^')
+                                        {
+                                            if (i < notyeetem.Length - 1 && i > 0)
+                                            {
+                                                int num = i + 1;
+                                                while (notyeetem[num] == ' ')
+                                                {
+                                                    num++;
+                                                }
+                                                StringBuilder tempSB = new StringBuilder();
+                                                while (notyeetem[num] != ' ')
+                                                {
+                                                    tempSB.Append(notyeetem[num]);
+                                                    num++;
+                                                }
+                                                int tempnum;
+                                                if (Int32.TryParse(tempSB.ToString(), out tempnum))
+                                                {
+                                                    time = 1;
+                                                    delimeter = i;
+                                                }
+                                                delimnumber1++;
+                                            }
+                                        }
+                                    }
+                                    for (int i = 0; i < notyeetem.Length; i++)
+                                    {
+                                        if (notyeetem[i] == '^')
+                                        {
+                                            try
+                                            {
+                                                if (i > 2)
+                                                {
+                                                    int num = i - 1;
+                                                    while (notyeetem[num] == ' ')
+                                                    {
+                                                        if (num == -1)
+                                                        {
+                                                            break;
+                                                        }
+                                                        num--;
+                                                        if (num == -1)
+                                                        {
+                                                            break;
+                                                        }
+                                                    }
+                                                    while (notyeetem[num] != ' ')
+                                                    {
+                                                        if (num == -1)
+                                                        {
+                                                            break;
+                                                        }
+                                                        num--;
+                                                        if (num == -1)
+                                                        {
+                                                            break;
+                                                        }
+                                                    }
+                                                    while (notyeetem[num] == ' ')
+                                                    {
+                                                        if (num == -1)
+                                                        {
+                                                            break;
+                                                        }
+                                                        num--;
+                                                        if (num == -1)
+                                                        {
+                                                            break;
+                                                        }
+                                                    }
+                                                    StringBuilder tempSB = new StringBuilder();
+                                                    while (notyeetem[num] != ' ')
+                                                    {
+                                                        tempSB.Insert(0, notyeetem[num]);
+                                                        num--;
+                                                        if (num == -1)
+                                                        {
+                                                            break;
+                                                        }
+                                                    }
+                                                    int tempnum;
+                                                    if (Int32.TryParse(tempSB.ToString(), out tempnum))
+                                                    {
+                                                        time = 0;
+                                                        delimeter = i;
+                                                    }
+                                                    delimnumber2++;
+                                                }
+                                            }
+                                            catch (Exception)
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                                StringBuilder sb = new StringBuilder();
+                                StringBuilder sb2 = new StringBuilder();
+                                for (int i = 0; i < delimeter; i++)
+                                {
+                                    sb.Append(notyeetem[i]);
+                                }
+                                for (int i = delimeter + 1; i < notyeetem.Length; i++)
+                                {
+                                    sb2.Append(notyeetem[i]);
+                                }
+                                List<string> badwords = new List<string>();
+                                string remindermessage;
+
+                                if (time == 0)
+                                {
+                                    remindermessage = manager.ParseReminder(yeetem, time, delimnumber2);
+                                    badwords = NumberStuffBetter(sb.ToString().Split(' '), ref mo, ref y, ref mi, ref d, ref h, ref s, ref daily, ref weekly, ref monthly, ref yearly);
                                 }
                                 else
                                 {
-                                    string yeetem = TheMessageNormal.Remove(0, "REMINDME".Length);
-                                    RemoveFilledSpace(ref yeetem);
-                                    RemoveWhiteSpace(ref yeetem);
+                                    remindermessage = manager.ParseReminder(yeetem, time, delimnumber1);
+                                    badwords = NumberStuffBetter(sb2.ToString().Split(' '), ref mo, ref y, ref mi, ref d, ref h, ref s, ref daily, ref weekly, ref monthly, ref yearly);
+                                }
+
+                                if (y + mo + d + h + mi + s != 0)
+                                {
+                                    CreateReminder(y, mo, d, h, mi, s, message.Author.Id, message.Channel, remindermessage, daily, weekly, monthly, yearly);
+                                    await message.Channel.SendMessageAsync("Reminder created!");
+                                }
+                                else if (badwords.Count != 0)
+                                {
+                                    sb.Clear();
+                                    sb.Append("There were some issues with setting the time. Here are the words stood out as problems to me; consider assigning them to an alias with ``CreateAlias word > alias`` AliasHelp for more info\n```");
+                                    foreach (var item in badwords)
+                                    {
+                                        sb.Append(item + " ");
+                                    }
+                                    sb.Append("```");
+                                    await message.Channel.SendMessageAsync(sb.ToString());
+                                }
+                                else
+                                {
+                                    #region gay
+                                    //////////////////////////////////////////////////////////////////
+                                    //OLD AND BAD (but i might need later so it stays)
+                                    //////////////////////////////////////////////////////////////////
+                                    Console.WriteLine("Uh oh, something bad happened, using the old remindme code as a last ditch effort");
                                     int tempnum = 0;
                                     StringBuilder stronks = new StringBuilder();
-                                    int y = 0, mo = 0, d = 0, h = 0, mi = 0, s = 0;
-                                    bool daily = false, weekly = false, monthly = false, yearly = false;
                                     int toremove = 0;
                                     for (int i = 0; yeetem[i] != ' '; i++)
                                     {
@@ -707,6 +1075,7 @@ namespace DiscordBot
                                         CreateReminder(y, mo, d, h, mi, s, message.Author.Id, message.Channel, yeetem, daily, weekly, monthly, yearly);
                                         message.Channel.SendMessageAsync("Reminder created!");
                                     }
+                                    #endregion
                                 }
                             }
                             else if (TheMessage.StartsWith("REMINDERS") || TheMessage.StartsWith("SHOWREMINDERS") || TheMessage.StartsWith("SHOW REMINDERS") || TheMessage.StartsWith("CHECK REMINDERS") || TheMessage.StartsWith("CHECKREMINDERS"))
@@ -1235,12 +1604,44 @@ namespace DiscordBot
                             {
                                 musicManager.ConnectToChannel(((user as IGuildUser).VoiceChannel as SocketVoiceChannel));
                             }
+                            else if ((TheMessage.StartsWith("ASSIGNPERSON") || TheMessage.StartsWith("ASSIGN PERSON") || TheMessage.StartsWith("ASSIGNUSER") || TheMessage.StartsWith("ASSIGN USER")) && TheMessage.Contains('^'))
+                            {
+                                TheMessage = TheMessage.Remove(0, "ASSIGNUS".Length);
+                                RemoveFilledSpace(ref TheMessage);
+                                RemoveWhiteSpace(ref TheMessage);
+                                string[] twosides = TheMessage.Split('^');
+                                for (int i = 0; i < twosides.Length; i++)
+                                {
+                                    RemoveWhiteSpace(ref twosides[i]);
+                                    while (twosides[i][twosides[i].Length - 1] == ' ')
+                                    {
+                                        twosides[i] = twosides[i].Remove(twosides[i].Length - 1, 1);
+                                    }
+                                }
+                                if (CustomCommands.IsIn(twosides[0]))
+                                {
+                                    if (message.MentionedUsers.Count == 0)
+                                    {
+                                        CustomCommands.ToggleAsMe(twosides[0], ulong.Parse(twosides[1]));
+                                        await message.Channel.SendMessageAsync("User selected for command!");
+                                    }
+                                    else
+                                    {
+                                        foreach (var item in message.MentionedUsers)
+                                        {
+                                            CustomCommands.ToggleAsMe(twosides[0], item.Id);
+                                        }
+                                        await message.Channel.SendMessageAsync("User selected for command!");
+                                    }
+                                }
+                            }
                             else if ((TheMessage.StartsWith("ADDCOMMAND") || TheMessage.StartsWith("CREATECOMMAND")) && TheMessage.Contains('^'))
                             {
                                 StringBuilder _Temp = new StringBuilder();
                                 string _Trigger;
                                 string[] _Return;
                                 bool _Contains = false;
+                                ulong userID = 0;
                                 if (TheMessage.StartsWith("ADDCOMMAND"))
                                 {
                                     TheMessageNormal = TheMessageNormal.Remove(0, 10);
@@ -1290,14 +1691,21 @@ namespace DiscordBot
                                     _TempList.RemoveAt(0);
                                     _Return = _TempList.ToArray();
                                 }
+                                if (_Return[0].ToUpper() == "TRUE")
+                                {
+                                    userID = message.Author.Id;
+                                    List<string> _TempList = _Return.ToList();
+                                    _TempList.RemoveAt(0);
+                                    _Return = _TempList.ToArray();
+                                }
                                 if (!BannedCommands.Contains(_Trigger.ToUpper()))
                                 {
                                     string _Value = CustomCommands.CheckExisting(_Trigger, "Add");
                                     if (_Value == "")
                                     {
-                                        if (CustomCommands.AddCheck(message, _Trigger, _Return, _Contains))
+                                        if (CustomCommands.AddCheck(message, _Trigger, _Return, _Contains, userID))
                                         {
-                                            CustomCommands.AddCommand(_Trigger, _Return, _Contains);
+                                            CustomCommands.AddCommand(_Trigger, _Return, _Contains, userID);
                                             await message.Channel.SendMessageAsync("Command successfully added!\nShow all custom commands with ShowCustomCommands.");
                                             CustomCommands.SaveCommands();
                                         }
@@ -1307,6 +1715,7 @@ namespace DiscordBot
                                             _tempcommand.Trigger = _Trigger;
                                             _tempcommand.Return = _Return;
                                             _tempcommand.include = _Contains;
+                                            _tempcommand.asMeID = userID;
                                         }
                                     }
                                     else
@@ -1325,6 +1734,7 @@ namespace DiscordBot
                                 string _Trigger;
                                 string[] _Return;
                                 bool _Contains = false;
+                                ulong userID = 0;
                                 TheMessageNormal = TheMessageNormal.Remove(0, 13);
                                 while (TheMessageNormal[0] == ' ')
                                 {
@@ -1375,12 +1785,19 @@ namespace DiscordBot
                                         _TempList.RemoveAt(0);
                                         _Return = _TempList.ToArray();
                                     }
+                                    if (_Return[0].ToUpper() == "TRUE")
+                                    {
+                                        userID = message.Author.Id;
+                                        List<string> _TempList = _Return.ToList();
+                                        _TempList.RemoveAt(0);
+                                        _Return = _TempList.ToArray();
+                                    }
                                     if (!BannedCommands.Contains(_Trigger))
                                     {
                                         string _Value = CustomCommands.CheckExisting(_Trigger, "Add");
                                         if (_Value == "")
                                         {
-                                            CustomCommands.AddCommand(_Trigger, _Return, _Contains);
+                                            CustomCommands.AddCommand(_Trigger, _Return, _Contains, userID);
                                             await message.Channel.SendMessageAsync("Command successfully added!\nShow all custom commands with ShowCustomCommands.");
                                             CustomCommands.SaveCommands();
                                         }
@@ -1608,7 +2025,7 @@ namespace DiscordBot
                             {
                                 if (_tempcommand.Trigger != null && _tempcommand.Trigger != "")
                                 {
-                                    CustomCommands.AddCommand(_tempcommand.Trigger, _tempcommand.Return, _tempcommand.include);
+                                    CustomCommands.AddCommand(_tempcommand.Trigger, _tempcommand.Return, _tempcommand.include, _tempcommand.asMeID);
                                     await message.Channel.SendMessageAsync("Command successfully overwritten!\nShow all custom commands with ShowCustomCommands.");
                                     CustomCommands.SaveCommands();
                                 }
@@ -2508,6 +2925,10 @@ namespace DiscordBot
                 {
                     try
                     {
+                        if (!canudont)
+                        {
+                            tempalias = "";
+                        }
                         if (!strokeoutdab)
                             galaxywords.AddWords(message.Content, message.Author.Id, message.Channel.Id);
                     }
@@ -3917,6 +4338,90 @@ namespace DiscordBot
                     {
                         return now;
                     }
+                }
+            }
+            List<string> NumberStuffBetter(string[] numbers, ref int mo, ref int y, ref int mi, ref int d, ref int h, ref int s, ref bool daily, ref bool weekly, ref bool monthly, ref bool yearly)
+            {
+                List<string> badwords = new List<string>();
+                bool expectnum = true;
+                int num = 0;
+                int num2 = 0;
+                for (int i = 0; i < numbers.Length; i++)
+                {
+                    if (expectnum)
+                    {
+                        expectnum = !Int32.TryParse(numbers[i], out num);
+                    }
+                    else
+                    {
+                        switch (numbers[i].ToLower())
+                        {
+                            case "years":
+                            case "year":
+                                y += num;
+                                expectnum = true;
+                                break;
+                            case "months":
+                            case "month":
+                                mo += num;
+                                expectnum = true;
+                                break;
+                            case "days":
+                            case "day":
+                                d += num;
+                                expectnum = true;
+                                break;
+                            case "hours":
+                            case "hour":
+                                h += num;
+                                expectnum = true;
+                                break;
+                            case "minutes":
+                            case "minute":
+                                mi += num;
+                                expectnum = true;
+                                break;
+                            case "seconds":
+                            case "second":
+                                s += num;
+                                expectnum = true;
+                                break;
+                            case "n/a":
+                                break;
+                            //commented out until solution is found, no one used these anyway, like litterally no one except me one time
+                            //case "daily":
+                            //    daily = true;
+                            //    break;
+                            //case "weekly":
+                            //    weekly = true;
+                            //    break;
+                            //case "monthly":
+                            //    monthly = true;
+                            //    break;
+                            //case "yearly":
+                            //    yearly = true;
+                            //    break;
+                            default:
+                                if (Int32.TryParse(numbers[i], out num2))
+                                {
+                                    num *= num2;
+                                }
+                                else
+                                {
+                                    badwords.Add(numbers[i]);
+                                }
+                                break;
+                        }
+
+                    }
+                }
+                return badwords;
+            }
+            void SaveAlias()
+            {
+                using (Stream r = new FileStream(@"..\..\aliases.yourmother", FileMode.Create, FileAccess.Write))
+                {
+                    f2.Serialize(r, manager);
                 }
             }
             do
