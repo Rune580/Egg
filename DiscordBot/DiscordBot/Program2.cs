@@ -34,6 +34,7 @@ namespace DiscordBot
         public string[] Return;
         public bool include;
         public ulong ID;
+        public ulong asMeID;
     };
     class Program2
     {
@@ -234,6 +235,10 @@ namespace DiscordBot
             }
             #endregion
             #region Banned Commands
+            BannedCommands.Add("ASSIGN USER");
+            BannedCommands.Add("ASSIGNUSER");
+            BannedCommands.Add("ASSIGN PERSON");
+            BannedCommands.Add("ASSIGNPERSON");
             BannedCommands.Add("ALIAS HELP");
             BannedCommands.Add("ALIASHELP");
             BannedCommands.Add("REMOVE ALIAS");
@@ -479,6 +484,7 @@ namespace DiscordBot
                             else if (CustomCommands.IsIn(CustomString) && !StartsWithBannedCommand)
                             {
                                 string CustomMessage = CustomCommands.ReturnIt(CustomString);
+                                ulong userID = CustomCommands.ReturnUser(CustomString);
                                 Console.WriteLine($"Detected: {CustomString} and is sending {CustomMessage.ToUpper()}");
                                 if (CustomMessage.ToUpper().StartsWith("PLAY "))
                                 {
@@ -490,7 +496,79 @@ namespace DiscordBot
                                 }
                                 else
                                 {
-                                    await message.Channel.SendMessageAsync(CustomMessage);
+                                    if (userID != 0)
+                                    {
+                                        try
+                                        {
+                                            var yes = Client.GetUser(userID).GetAvatarUrl();
+                                            System.Drawing.Image image = DownloadImageFromUrl(yes.Trim());
+                                            image.Save($@"..\..\{userID}image.png");
+                                            image.Dispose();
+
+                                            var hook = (message.Channel as SocketTextChannel).CreateWebhookAsync("You Have Sexuals");
+                                            Image im = new Image($@"..\..\{userID}image.png");
+                                            bool found = false;
+                                            foreach (var guild in Client.Guilds)
+                                            {
+                                                foreach (var channel in guild.Channels)
+                                                {
+                                                    if (channel == message.Channel)
+                                                    {
+                                                        try
+                                                        {
+                                                            await hook.Result.ModifyAsync(x =>
+                                                            {
+                                                                List<ulong> ids = new List<ulong>();
+                                                                foreach (var item in guild.Users)
+                                                                {
+                                                                    ids.Add(item.Id);
+                                                                }
+                                                                if (ids.Contains(userID))
+                                                                {
+                                                                    x.Name = guild.GetUser(userID).Nickname;
+                                                                }
+                                                                else
+                                                                {
+                                                                    x.Name = Client.GetUser(userID).Username;
+                                                                }
+                                                                x.Image = im;
+                                                                im.Dispose();
+                                                            });
+                                                        }
+                                                        catch (Exception e3)
+                                                        {
+                                                            Console.WriteLine(e3.Message);
+                                                            Console.WriteLine(e3.Source);
+                                                            await hook.Result.ModifyAsync(x =>
+                                                            {
+                                                                x.Name = Client.GetUser(userID).Username;
+                                                                x.Image = im;
+                                                                im.Dispose();
+                                                            });
+                                                        }
+                                                        DiscordWebhookClient d = new DiscordWebhookClient(hook.Result);
+                                                        await d.SendMessageAsync(CustomMessage);
+                                                        await d.DeleteWebhookAsync();
+                                                        found = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (found)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        catch (Exception e3)
+                                        {
+                                            Console.WriteLine(e3.Message);
+                                            await message.Channel.SendMessageAsync(CustomMessage);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        await message.Channel.SendMessageAsync(CustomMessage);
+                                    }
                                 }
                             }
                             else if (TheMessage.Equals("NODAD") || TheMessage.Equals("NO DAD"))
@@ -1526,12 +1604,44 @@ namespace DiscordBot
                             {
                                 musicManager.ConnectToChannel(((user as IGuildUser).VoiceChannel as SocketVoiceChannel));
                             }
+                            else if ((TheMessage.StartsWith("ASSIGNPERSON") || TheMessage.StartsWith("ASSIGN PERSON") || TheMessage.StartsWith("ASSIGNUSER") || TheMessage.StartsWith("ASSIGN USER")) && TheMessage.Contains('^'))
+                            {
+                                TheMessage = TheMessage.Remove(0, "ASSIGNUS".Length);
+                                RemoveFilledSpace(ref TheMessage);
+                                RemoveWhiteSpace(ref TheMessage);
+                                string[] twosides = TheMessage.Split('^');
+                                for (int i = 0; i < twosides.Length; i++)
+                                {
+                                    RemoveWhiteSpace(ref twosides[i]);
+                                    while (twosides[i][twosides[i].Length - 1] == ' ')
+                                    {
+                                        twosides[i] = twosides[i].Remove(twosides[i].Length - 1, 1);
+                                    }
+                                }
+                                if (CustomCommands.IsIn(twosides[0]))
+                                {
+                                    if (message.MentionedUsers.Count == 0)
+                                    {
+                                        CustomCommands.ToggleAsMe(twosides[0], ulong.Parse(twosides[1]));
+                                        await message.Channel.SendMessageAsync("User selected for command!");
+                                    }
+                                    else
+                                    {
+                                        foreach (var item in message.MentionedUsers)
+                                        {
+                                            CustomCommands.ToggleAsMe(twosides[0], item.Id);
+                                        }
+                                        await message.Channel.SendMessageAsync("User selected for command!");
+                                    }
+                                }
+                            }
                             else if ((TheMessage.StartsWith("ADDCOMMAND") || TheMessage.StartsWith("CREATECOMMAND")) && TheMessage.Contains('^'))
                             {
                                 StringBuilder _Temp = new StringBuilder();
                                 string _Trigger;
                                 string[] _Return;
                                 bool _Contains = false;
+                                ulong userID = 0;
                                 if (TheMessage.StartsWith("ADDCOMMAND"))
                                 {
                                     TheMessageNormal = TheMessageNormal.Remove(0, 10);
@@ -1581,14 +1691,21 @@ namespace DiscordBot
                                     _TempList.RemoveAt(0);
                                     _Return = _TempList.ToArray();
                                 }
+                                if (_Return[0].ToUpper() == "TRUE")
+                                {
+                                    userID = message.Author.Id;
+                                    List<string> _TempList = _Return.ToList();
+                                    _TempList.RemoveAt(0);
+                                    _Return = _TempList.ToArray();
+                                }
                                 if (!BannedCommands.Contains(_Trigger.ToUpper()))
                                 {
                                     string _Value = CustomCommands.CheckExisting(_Trigger, "Add");
                                     if (_Value == "")
                                     {
-                                        if (CustomCommands.AddCheck(message, _Trigger, _Return, _Contains))
+                                        if (CustomCommands.AddCheck(message, _Trigger, _Return, _Contains, userID))
                                         {
-                                            CustomCommands.AddCommand(_Trigger, _Return, _Contains);
+                                            CustomCommands.AddCommand(_Trigger, _Return, _Contains, userID);
                                             await message.Channel.SendMessageAsync("Command successfully added!\nShow all custom commands with ShowCustomCommands.");
                                             CustomCommands.SaveCommands();
                                         }
@@ -1598,6 +1715,7 @@ namespace DiscordBot
                                             _tempcommand.Trigger = _Trigger;
                                             _tempcommand.Return = _Return;
                                             _tempcommand.include = _Contains;
+                                            _tempcommand.asMeID = userID;
                                         }
                                     }
                                     else
@@ -1616,6 +1734,7 @@ namespace DiscordBot
                                 string _Trigger;
                                 string[] _Return;
                                 bool _Contains = false;
+                                ulong userID = 0;
                                 TheMessageNormal = TheMessageNormal.Remove(0, 13);
                                 while (TheMessageNormal[0] == ' ')
                                 {
@@ -1666,12 +1785,19 @@ namespace DiscordBot
                                         _TempList.RemoveAt(0);
                                         _Return = _TempList.ToArray();
                                     }
+                                    if (_Return[0].ToUpper() == "TRUE")
+                                    {
+                                        userID = message.Author.Id;
+                                        List<string> _TempList = _Return.ToList();
+                                        _TempList.RemoveAt(0);
+                                        _Return = _TempList.ToArray();
+                                    }
                                     if (!BannedCommands.Contains(_Trigger))
                                     {
                                         string _Value = CustomCommands.CheckExisting(_Trigger, "Add");
                                         if (_Value == "")
                                         {
-                                            CustomCommands.AddCommand(_Trigger, _Return, _Contains);
+                                            CustomCommands.AddCommand(_Trigger, _Return, _Contains, userID);
                                             await message.Channel.SendMessageAsync("Command successfully added!\nShow all custom commands with ShowCustomCommands.");
                                             CustomCommands.SaveCommands();
                                         }
@@ -1899,7 +2025,7 @@ namespace DiscordBot
                             {
                                 if (_tempcommand.Trigger != null && _tempcommand.Trigger != "")
                                 {
-                                    CustomCommands.AddCommand(_tempcommand.Trigger, _tempcommand.Return, _tempcommand.include);
+                                    CustomCommands.AddCommand(_tempcommand.Trigger, _tempcommand.Return, _tempcommand.include, _tempcommand.asMeID);
                                     await message.Channel.SendMessageAsync("Command successfully overwritten!\nShow all custom commands with ShowCustomCommands.");
                                     CustomCommands.SaveCommands();
                                 }

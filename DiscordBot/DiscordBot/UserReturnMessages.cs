@@ -23,13 +23,13 @@ namespace DiscordBot
             LoadCommands();
             LoadOwners();
         }
-        public bool AddCheck(SocketMessage message, string _Trigger, string[] _Return, bool _Contains)
+        public bool AddCheck(SocketMessage message, string _Trigger, string[] _Return, bool _Contains, ulong asUserID)
         {
             for (int i = 0; i <= commands.Count; i++)
             {
                 if (i == commands.Count)
                 {
-                    AddCommand(_Trigger, _Return, _Contains);
+                    AddCommand(_Trigger, _Return, _Contains, asUserID);
                     return true;
                 }
                 else if(commands[i].Trigger.ToUpper() == _Trigger.ToUpper())
@@ -40,9 +40,9 @@ namespace DiscordBot
             }
             return false;
         }
-        public void AddCommand(string _Trigger, string[] _Return, bool _Contains)
+        public void AddCommand(string _Trigger, string[] _Return, bool _Contains, ulong _asPerson)
         {
-            ReturnCommands temp = new ReturnCommands(_Trigger, _Return, _Contains);
+            ReturnCommands temp = new ReturnCommands(_Trigger, _Return, _Contains, _asPerson);
             for (int i = 0; i <= commands.Count; i++)
             {
                 if (i == commands.Count)
@@ -75,7 +75,7 @@ namespace DiscordBot
             string line;
             string _Trigger = "";
             string[] _Return;
-            ulong _Owner = 0;
+            ulong _Owner = 69;
             try
             {
                 using (StreamReader r = new StreamReader(@"..\..\UserCommands.txt"))
@@ -85,11 +85,11 @@ namespace DiscordBot
                 string[] lines = line.Split('ª');
                 for (int i = 0; i < lines.Count(); i++)
                 {
-                    if (i % 3 == 0)
+                    if (i % 4 == 0)
                     {
                         _Trigger = lines[i];
                     }
-                    else if ((i + 2) % 3 == 0)
+                    else if (i % 4 == 1)
                     {
                         bool _Contains = false;
                         _Return = lines[i].Split('∰');
@@ -115,12 +115,16 @@ namespace DiscordBot
                                 }
                             }
                         }
-                        AddCommand(_Trigger, TempList.ToArray(), _Contains);
+                        AddCommand(_Trigger, TempList.ToArray(), _Contains, 0);
                     }
-                    else if ((i + 1) % 3 == 0)
+                    else if (i % 4 == 2)
                     {
                         _Owner = ulong.Parse(lines[i]);
                         ClaimCommand(_Trigger, _Owner);
+                    }
+                    else if (i % 4 == 3)
+                    {
+                        ToggleAsMe(_Trigger, ulong.Parse(lines[i]));
                     }
                 }
             }
@@ -144,6 +148,8 @@ namespace DiscordBot
                         }
                         r.Write("ª");
                         r.Write(item.Owner);
+                        r.Write("ª");
+                        r.Write(item.asPerson);
                         r.Write("ª");
                     }
                 }
@@ -250,6 +256,51 @@ namespace DiscordBot
             }
             return "";
         }
+        public ulong ReturnUser(string _Trigger)
+        {
+            while (true)
+            {
+                if (_Trigger.Contains("<") && _Trigger.Contains('>'))
+                {
+                    int position = 0;
+                    while (_Trigger[position] != '<')
+                    {
+                        position++;
+                    }
+                    while (_Trigger[position] != '>')
+                    {
+                        _Trigger = _Trigger.Remove(position, 1);
+                    }
+                    _Trigger = _Trigger.Remove(position, 1);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            foreach (var item in commands)
+            {
+                if (item.Contains)
+                {
+                    if (_Trigger.ToUpper().Contains($"{item.Trigger.ToUpper()}"))
+                    {
+                        Random random = new Random();
+                        int RanReturn = random.Next(item.Return.Count());
+                        return item.asPerson;
+                    }
+                }
+                else
+                {
+                    if (_Trigger.ToUpper() == item.Trigger.ToUpper())
+                    {
+                        Random random = new Random();
+                        int RanReturn = random.Next(item.Return.Count());
+                        return item.asPerson;
+                    }
+                }
+            }
+            return 0;
+        }
         public void AppendCommand(string _Trigger, string[] _Return)
         {
             for (int i = 0; i <= commands.Count; i++)
@@ -289,6 +340,19 @@ namespace DiscordBot
                 if (_Trigger.ToUpper() == item.Trigger.ToUpper())
                 {
                     item.Contains = !item.Contains;
+                    return item;
+                }
+            }
+            return null;
+        }
+        public ReturnCommands ToggleAsMe(string _Trigger, ulong ID)
+        {
+            foreach (var item in commands)
+            {
+                if (_Trigger.ToUpper() == item.Trigger.ToUpper())
+                {
+                    item.asPerson = ID;
+                    SaveCommands();
                     return item;
                 }
             }
@@ -832,16 +896,18 @@ namespace DiscordBot
     }
     public class ReturnCommands
     {
-        public ReturnCommands(string _Trigger, string[] _Return, bool _Contains)
+        public ReturnCommands(string _Trigger, string[] _Return, bool _Contains, ulong _asPerson)
         {
             Trigger = _Trigger;
             Return = _Return;
             Contains = _Contains;
+            asPerson = _asPerson;
         }
         public string Trigger;
         public string[] Return;
         public bool Contains;
         public ulong Owner;
+        public ulong asPerson;
     }
     public class Owners
     {
