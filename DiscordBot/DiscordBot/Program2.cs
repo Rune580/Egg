@@ -235,6 +235,8 @@ namespace DiscordBot
             }
             #endregion
             #region Banned Commands
+            BannedCommands.Add("REMOVE REMINDER");
+            BannedCommands.Add("REMOVEREMINDER");
             BannedCommands.Add("ASSIGN USER");
             BannedCommands.Add("ASSIGNUSER");
             BannedCommands.Add("ASSIGN PERSON");
@@ -807,9 +809,23 @@ namespace DiscordBot
                                 string m = "When creating a reminder, you can call aliases which have been created by users. This is intended to make assigning a time to your reminder a much smoother experience. \n\nWhen creating an alias with ``Create Alias``, keep in mind the syntax is as follows: ``Create Alias input > output`` where input is a word with no spaces, and output can be anything really, bearing in mind neither of these can contain ``>`` \n\nHere is a list of suggestions/ guidelines for the output \n\n```^ == delimiter between how much time and the reminder message \nyears / months / weeks / days / hours / minutes / seconds == self explanatory I hope \n\nExamples: \ncreatealias sexual > 1 minute 2 seconds \ncreatealias kevin > 2 hours \ncreatealias browning > 69 seconds \ncreatealias BIG > 10 years 69 months 2 weeks 1 minute 7 seconds \ncreatealias like > n/a <----(n/a gets interperated as nothing at runtime)```";
                                 await message.Channel.SendMessageAsync(m);
                             }
-                            else if (TheMessage.Equals("Y") && tempalias != "")
+                            else if (TheMessage.StartsWith("REMOVEREMINDER") || TheMessage.StartsWith("REMOVE REMINDER"))
                             {
-                                if (tempalias.ToUpper().EndsWith("S"))
+                                TheMessage = TheMessage.Remove(0, "REMOVEREMINDER".Length);
+                                RemoveFilledSpace(ref TheMessage);
+                                RemoveWhiteSpace(ref TheMessage);
+                                for (int i = 0; i < reminders.Count; i++)
+                                {
+                                    if (reminders[i].message.ToUpper() == TheMessage)
+                                    {
+                                        reminders.RemoveAt(i);
+                                        await message.Channel.SendMessageAsync("Reminder removed!");
+                                    }
+                                }
+                            }
+                            else if (TheMessage.Equals("Y") && tempalias != "-6969")
+                            {
+                                if (tempalias.ToUpper().EndsWith("S") || tempalias.ToUpper().EndsWith("X"))
                                 {
                                     tempalias += "es";
                                 }
@@ -3005,7 +3021,7 @@ namespace DiscordBot
                     {
                         if (!canudont)
                         {
-                            tempalias = "";
+                            tempalias = "-6969";
                         }
                         if (!strokeoutdab)
                             galaxywords.AddWords(message.Content, message.Author.Id, message.Channel.Id);
@@ -4461,6 +4477,11 @@ namespace DiscordBot
                                 break;
                             case "seconds":
                             case "second":
+                                s += num;
+                                expectnum = true;
+                                break;
+                            case "weeks":
+                            case "week":
                                 s += num;
                                 expectnum = true;
                                 break;
