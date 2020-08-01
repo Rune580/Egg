@@ -513,7 +513,13 @@ namespace DiscordBot
                                     }
                                     catch (Exception)
                                     {
-                                        sb.Append($"\n{client.GetUser(item).Username}");
+                                        try
+                                        {
+                                            sb.Append($"\n{client.GetUser(item).Username}");
+                                        }
+                                        catch (Exception)
+                                        {
+                                        }
                                     }
                                 }
                             }
