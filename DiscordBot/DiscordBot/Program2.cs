@@ -98,7 +98,7 @@ namespace DiscordBot
         public static bool trashing = false;
         public static UserReturnMessages CustomCommands;
         public static List<string> BannedCommands = new List<string>();
-        public static MusicManager musicManager;
+        //public static MusicManager musicManager;
         public class RedditUrl
         {
             public string URL;
@@ -196,7 +196,7 @@ namespace DiscordBot
                 UsedURLs.Add(___Temp);
             }
             StorageClass temp = JsonConvert.DeserializeObject<StorageClass>(line);
-            musicManager = new MusicManager(Client);
+            //musicManager = new MusicManager(Client);
             WakeUp wakemachine = new WakeUp();
 
             IFormatter f = new BinaryFormatter();
@@ -490,7 +490,7 @@ namespace DiscordBot
                                 Console.WriteLine($"Detected: {CustomString} and is sending {CustomMessage.ToUpper()}");
                                 if (CustomMessage.ToUpper().StartsWith("PLAY "))
                                 {
-                                    PlaySong(CustomMessage, user, true);
+                                    //PlaySong(CustomMessage, user, true);
                                 }
                                 else if (CustomMessage.ToUpper().StartsWith("R/"))
                                 {
@@ -1605,18 +1605,18 @@ namespace DiscordBot
                                     await message.Channel.SendMessageAsync("The requested trigger word was not found!");
                                 }
                             }
-                            else if (TheMessage.StartsWith("LEAVE") && TheMessage.Count() == 5)
-                            {
-                                musicManager.Leave();
-                            }
-                            else if (TheMessage.StartsWith("SKIP") && TheMessage.Count() == 4)
-                            {
-                                musicManager.Skip();
-                            }
-                            else if (TheMessage.StartsWith("JOIN") && TheMessage.Count() == 4)
-                            {
-                                musicManager.ConnectToChannel(((user as IGuildUser).VoiceChannel as SocketVoiceChannel));
-                            }
+                            //else if (TheMessage.StartsWith("LEAVE") && TheMessage.Count() == 5)
+                            //{
+                            //    musicManager.Leave();
+                            //}
+                            //else if (TheMessage.StartsWith("SKIP") && TheMessage.Count() == 4)
+                            //{
+                            //    musicManager.Skip();
+                            //}
+                            //else if (TheMessage.StartsWith("JOIN") && TheMessage.Count() == 4)
+                            //{
+                            //    musicManager.ConnectToChannel(((user as IGuildUser).VoiceChannel as SocketVoiceChannel));
+                            //}
                             else if ((TheMessage.StartsWith("UNASSIGNPERSON") || TheMessage.StartsWith("UNASSIGN PERSON") || TheMessage.StartsWith("UNASSIGNUSER") || TheMessage.StartsWith("UNASSIGN USER")) && TheMessage.Contains('^'))
                             {
                                 TheMessage = TheMessage.Remove(0, "UNASSIGNUS".Length);
@@ -2083,7 +2083,7 @@ namespace DiscordBot
                             {
                                 TopDown.SavePlayers();
                                 await message.Channel.SendMessageAsync($"Restarting, this should only take a second or two.");
-                                await musicManager.Leave();
+                                //await musicManager.Leave();
                                 Application.Restart();
                                 Environment.Exit(0);
                             }
@@ -2703,20 +2703,20 @@ namespace DiscordBot
                                         else
                                         {
                                             shot = true;
-                                            if ((RPC1 as IGuildUser).VoiceChannel != null)
-                                            {
-                                                if ((message.Author as IGuildUser).VoiceChannel != null)
-                                                {
-                                                    PlaySong($@"play https://www.youtube.com/watch?v=E3TsZOV4Wvg", user, true);
-                                                }
-                                            }
-                                            else if ((RPC2 as IGuildUser).VoiceChannel != null)
-                                            {
-                                                if ((message.Author as IGuildUser).VoiceChannel != null)
-                                                {
-                                                    PlaySong($@"play https://www.youtube.com/watch?v=E3TsZOV4Wvg", user, true);
-                                                }
-                                            }
+                                            //if ((RPC1 as IGuildUser).VoiceChannel != null)
+                                            //{
+                                            //    //if ((message.Author as IGuildUser).VoiceChannel != null)
+                                            //    //{
+                                            //    //    PlaySong($@"play https://www.youtube.com/watch?v=E3TsZOV4Wvg", user, true);
+                                            //    //}
+                                            //}
+                                            //else if ((RPC2 as IGuildUser).VoiceChannel != null)
+                                            //{
+                                            //    //if ((message.Author as IGuildUser).VoiceChannel != null)
+                                            //    //{
+                                            //    //    PlaySong($@"play https://www.youtube.com/watch?v=E3TsZOV4Wvg", user, true);
+                                            //    //}
+                                            //}
                                             break;
                                         }
                                         eb.Title = $"{RPC1.Username}, {RPC2.Username} has picked {RPCchoice1}.";
@@ -2808,20 +2808,20 @@ namespace DiscordBot
                                         eb.Footer = ft;
                                         eb.Color = Color.Gold;
                                         await RPCchannel.SendMessageAsync("", false, eb.Build());
-                                        if ((RPC1 as IGuildUser).VoiceChannel != null)
-                                        {
-                                            if ((message.Author as IGuildUser).VoiceChannel != null)
-                                            {
-                                                PlaySong($@"play https://www.youtube.com/watch?v=E3TsZOV4Wvg", user, true);
-                                            }
-                                        }
-                                        else if ((RPC2 as IGuildUser).VoiceChannel != null)
-                                        {
-                                            if ((message.Author as IGuildUser).VoiceChannel != null)
-                                            {
-                                                PlaySong($@"play https://www.youtube.com/watch?v=E3TsZOV4Wvg", user, true);
-                                            }
-                                        }
+                                        //if ((RPC1 as IGuildUser).VoiceChannel != null)
+                                        //{
+                                        //    if ((message.Author as IGuildUser).VoiceChannel != null)
+                                        //    {
+                                        //        PlaySong($@"play https://www.youtube.com/watch?v=E3TsZOV4Wvg", user, true);
+                                        //    }
+                                        //}
+                                        //else if ((RPC2 as IGuildUser).VoiceChannel != null)
+                                        //{
+                                        //    if ((message.Author as IGuildUser).VoiceChannel != null)
+                                        //    {
+                                        //        PlaySong($@"play https://www.youtube.com/watch?v=E3TsZOV4Wvg", user, true);
+                                        //    }
+                                        //}
                                         trashtimestring($"TRASHTIME {RPCchannel.Id} {RPC1.Id}", "gears");
                                     }
                                 }
@@ -2845,10 +2845,10 @@ namespace DiscordBot
                                         eb.ImageUrl = "https://i.imgur.com/bb8oJps.png";
                                         eb.Color = Color.Red;
                                         await message.Channel.SendMessageAsync("", false, eb.Build());
-                                        if ((message.Author as IGuildUser).VoiceChannel != null)
-                                        {
-                                            PlaySong($@"play https://www.youtube.com/watch?v=E3TsZOV4Wvg", user, true);
-                                        }
+                                        //if ((message.Author as IGuildUser).VoiceChannel != null)
+                                        //{
+                                        //    PlaySong($@"play https://www.youtube.com/watch?v=E3TsZOV4Wvg", user, true);
+                                        //}
                                     }
                                 }
                                 else if (TheMessage.StartsWith("EGGHELP") || TheMessage.StartsWith("HELPEGG") || TheMessage.StartsWith("EGG HELP") || TheMessage.StartsWith("HELP EGG"))
@@ -3127,7 +3127,7 @@ namespace DiscordBot
                 //        await (Client.GetChannel(voice.Id) as ISocketAudioChannel).DisconnectAsync();
                 //    }
                 //}
-                await musicManager.Leave();
+                //await musicManager.Leave();
             }
             async Task UpdateStuff()
             {
@@ -3214,18 +3214,18 @@ namespace DiscordBot
                 }
                 await Client.GetUser(Rune).SendMessageAsync($"{TheSenderNoString.Username} wanted to tell you: {tempmessage}\n\nIf you want this to stop, type ~killyourself");
             }
-            async void connectaudio(ISocketAudioChannel socketAudioChannel, string soundeffect)
-            {
-                try
-                {
-                    await musicManager.ConnectToChannel(socketAudioChannel);
-                    playsound(audioClient, soundeffect);
-                }
-                catch
-                {
-                    Console.WriteLine("I dont know yet");
-                }
-            }
+            //async void connectaudio(ISocketAudioChannel socketAudioChannel, string soundeffect)
+            //{
+            //    try
+            //    {
+            //        await musicManager.ConnectToChannel(socketAudioChannel);
+            //        playsound(audioClient, soundeffect);
+            //    }
+            //    catch
+            //    {
+            //        Console.WriteLine("I dont know yet");
+            //    }
+            //}
             async void trashtimestring(string TheMessage, string gears)
             {
                 TheMessage = TheMessage.Remove(0, 10);
@@ -3618,109 +3618,109 @@ namespace DiscordBot
 
                 return image;
             }
-            async void playsound(IAudioClient audio, string thesound)
-            {
-                using (System.IO.Stream output = CreateStream(thesound).StandardOutput.BaseStream)
-                using (AudioOutStream stream = audio.CreatePCMStream(AudioApplication.Music, 128 * 1024))
-                {
-                    try
-                    {
-                        await output.CopyToAsync(stream);
-                        await stream.FlushAsync().ConfigureAwait(false);
-                        Console.WriteLine("Finished Audio");
-                        musicManager.Leave();
-                    }
-                    catch
-                    {
-                        Console.WriteLine("big gay");
-                    }
-                }
-            }
-            async void PlaySong(string URL, SocketUser sender, bool _Add = false)
-            {
-                try
-                {
-                    string song = "";
-                    if (URL.ToUpper().Contains('/') && URL.ToUpper().Contains(".COM"))
-                    {
-                        while (URL[0] == ' ')
-                        {
-                            URL = URL.Remove(0, 1);
-                        }
-                        while (URL[0] != ' ')
-                        {
-                            URL = URL.Remove(0, 1);
-                        }
-                        while (URL[0] == ' ')
-                        {
-                            URL = URL.Remove(0, 1);
-                        }
+            //async void playsound(IAudioClient audio, string thesound)
+            //{
+            //    using (System.IO.Stream output = CreateStream(thesound).StandardOutput.BaseStream)
+            //    using (AudioOutStream stream = audio.CreatePCMStream(AudioApplication.Music, 128 * 1024))
+            //    {
+            //        try
+            //        {
+            //            await output.CopyToAsync(stream);
+            //            await stream.FlushAsync().ConfigureAwait(false);
+            //            Console.WriteLine("Finished Audio");
+            //            musicManager.Leave();
+            //        }
+            //        catch
+            //        {
+            //            Console.WriteLine("big gay");
+            //        }
+            //    }
+            //}
+            //async void PlaySong(string URL, SocketUser sender, bool _Add = false)
+            //{
+            //    try
+            //    {
+            //        string song = "";
+            //        if (URL.ToUpper().Contains('/') && URL.ToUpper().Contains(".COM"))
+            //        {
+            //            while (URL[0] == ' ')
+            //            {
+            //                URL = URL.Remove(0, 1);
+            //            }
+            //            while (URL[0] != ' ')
+            //            {
+            //                URL = URL.Remove(0, 1);
+            //            }
+            //            while (URL[0] == ' ')
+            //            {
+            //                URL = URL.Remove(0, 1);
+            //            }
 
 
-                        if (URL.ToUpper().Contains("YOUTUBE"))
-                        {
-                            while (URL.Contains('&'))
-                            {
-                                URL = URL.Remove(URL.Count() - 1, 1);
-                            }
-                        }
-                        else if (URL.ToUpper().Contains("SOUNDCLOUD"))
-                        {
-                        }
+            //            if (URL.ToUpper().Contains("YOUTUBE"))
+            //            {
+            //                while (URL.Contains('&'))
+            //                {
+            //                    URL = URL.Remove(URL.Count() - 1, 1);
+            //                }
+            //            }
+            //            else if (URL.ToUpper().Contains("SOUNDCLOUD"))
+            //            {
+            //            }
 
 
-                    }
-                    else
-                    {
-                        VideoSearch Video = new VideoSearch();
-                        URL = Video.SearchQuery(URL, 1)[0].Url;
-                        while (URL.Contains('&'))
-                        {
-                            URL = URL.Remove(URL.Count() - 1, 1);
-                        }
-                    }
-                    int VideoNumber = 1;
-                    for (int i = 0; i < URL.Count(); i++)
-                    {
-                        VideoNumber += (URL[i] * (i * 10001));
-                    }
+            //        }
+            //        else
+            //        {
+            //            VideoSearch Video = new VideoSearch();
+            //            URL = Video.SearchQuery(URL, 1)[0].Url;
+            //            while (URL.Contains('&'))
+            //            {
+            //                URL = URL.Remove(URL.Count() - 1, 1);
+            //            }
+            //        }
+            //        int VideoNumber = 1;
+            //        for (int i = 0; i < URL.Count(); i++)
+            //        {
+            //            VideoNumber += (URL[i] * (i * 10001));
+            //        }
 
-                    song = $@"..\..\YoutubeDownload\{VideoNumber}.mp3";
+            //        song = $@"..\..\YoutubeDownload\{VideoNumber}.mp3";
 
-                    Console.WriteLine(song);
-                    if (File.Exists(song))
-                    {
-                        await musicManager.ConnectToChannel(((sender as IGuildUser).VoiceChannel as SocketVoiceChannel));
-                        if (_Add)
-                        {
-                            musicManager.AddToStream(song);
-                        }
-                        else
-                        {
-                            musicManager.Enqueue(song);
-                        }
-                    }
-                    else
-                    {
-                        downloadurl(URL);
-                        if (File.Exists(song))
-                        {
-                            await musicManager.ConnectToChannel(((sender as IGuildUser).VoiceChannel as SocketVoiceChannel));
-                        }
-                        if (_Add)
-                        {
-                            musicManager.AddToStream(song);
-                        }
-                        else
-                        {
-                            musicManager.Enqueue(song);
-                        }
-                    }
-                }
-                catch
-                {
-                }
-            }
+            //        Console.WriteLine(song);
+            //        if (File.Exists(song))
+            //        {
+            //            await musicManager.ConnectToChannel(((sender as IGuildUser).VoiceChannel as SocketVoiceChannel));
+            //            if (_Add)
+            //            {
+            //                musicManager.AddToStream(song);
+            //            }
+            //            else
+            //            {
+            //                musicManager.Enqueue(song);
+            //            }
+            //        }
+            //        else
+            //        {
+            //            downloadurl(URL);
+            //            if (File.Exists(song))
+            //            {
+            //                await musicManager.ConnectToChannel(((sender as IGuildUser).VoiceChannel as SocketVoiceChannel));
+            //            }
+            //            if (_Add)
+            //            {
+            //                musicManager.AddToStream(song);
+            //            }
+            //            else
+            //            {
+            //                musicManager.Enqueue(song);
+            //            }
+            //        }
+            //    }
+            //    catch
+            //    {
+            //    }
+            //}
             async void RedditBrowse(SocketMessage ChannelMessage, string MessageContent)
             {
                 try

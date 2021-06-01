@@ -767,3 +767,10 @@ C:\Users\Zachary Jones\Desktop\Egg\DiscordBot\DiscordBot\bin\Debug\System.ValueT
 C:\Users\Zachary Jones\Desktop\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.csprojAssemblyReference.cache
 C:\Users\Zachary Jones\Desktop\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.exe.config
 C:\Users\Zachary Jones\Desktop\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.csproj.CopyComplete
+I:\Egg\DiscordBot\DiscordBot\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
+I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.Linq.Async.dll
+I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.Threading.Tasks.Extensions.dll
+I:\Egg\DiscordBot\DiscordBot\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
+I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.Linq.Async.xml
+I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.Threading.Tasks.Extensions.xml
+I:\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.csproj.CoreCompileInputs.cache
