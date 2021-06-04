@@ -774,3 +774,9 @@ I:\Egg\DiscordBot\DiscordBot\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.Linq.Async.xml
 I:\Egg\DiscordBot\DiscordBot\bin\Debug\System.Threading.Tasks.Extensions.xml
 I:\Egg\DiscordBot\DiscordBot\obj\Debug\DiscordBot.csproj.CoreCompileInputs.cache
+C:\Users\Zachary Jones\Desktop\Egg\DiscordBot\DiscordBot\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\Zachary Jones\Desktop\Egg\DiscordBot\DiscordBot\bin\Debug\System.Linq.Async.dll
+C:\Users\Zachary Jones\Desktop\Egg\DiscordBot\DiscordBot\bin\Debug\System.Threading.Tasks.Extensions.dll
+C:\Users\Zachary Jones\Desktop\Egg\DiscordBot\DiscordBot\bin\Debug\Microsoft.Bcl.AsyncInterfaces.xml
+C:\Users\Zachary Jones\Desktop\Egg\DiscordBot\DiscordBot\bin\Debug\System.Linq.Async.xml
+C:\Users\Zachary Jones\Desktop\Egg\DiscordBot\DiscordBot\bin\Debug\System.Threading.Tasks.Extensions.xml
