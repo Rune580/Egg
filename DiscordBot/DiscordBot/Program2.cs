@@ -28,6 +28,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace DiscordBot
 {
+    // this is going to be hell to clean up
     public struct tempcommand
     {
         public string Trigger;
@@ -130,7 +131,7 @@ namespace DiscordBot
         public static List<string> tempout;
         public static bool canudont = false;
         #endregion
-        static void Main(string[] args)
+        static void BadMain(string[] args)
         {
             TopDownGame TopDown = new TopDownGame();
             #region startup

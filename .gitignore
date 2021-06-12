@@ -328,7 +328,14 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+
+
 DiscordBot/DiscordBot/171749888747503617image.png
 DiscordBot/DiscordBot/603637484597018644image.png
 DiscordBot/DiscordBot/FinalImages/final17174988.png
 DiscordBot/DiscordBot/token.txt
+DiscordBot/DiscordBot/obj/Debug/DiscordBot.pdb
+DiscordBot/DiscordBot/obj/Debug/DiscordBot.exe.config
+DiscordBot/DiscordBot/obj/Debug/DiscordBot.exe
+DiscordBot/DiscordBot/obj/Debug/DiscordBot.csprojAssemblyReference.cache
+DiscordBot/DiscordBot/obj/Debug/DiscordBot.csproj.FileListAbsolute.txt
