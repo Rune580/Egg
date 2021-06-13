@@ -20,8 +20,20 @@ namespace DiscordBot
 
         private static async Task MainAsync(string[] args)
         {
-            EggConfig config = ConfigManager.GetEggConfig();
+            MessageToDateTime.AddAlias("second(s)", MessageToDateTime.TimeAlias.Seconds);
+            MessageToDateTime.AddAlias("sec(s)", MessageToDateTime.TimeAlias.Seconds);
+            MessageToDateTime.AddAlias("s", MessageToDateTime.TimeAlias.Seconds);
             
+            MessageToDateTime.AddAlias("minute(s)", MessageToDateTime.TimeAlias.Minutes);
+            MessageToDateTime.AddAlias("min(s)", MessageToDateTime.TimeAlias.Minutes);
+            MessageToDateTime.AddAlias("m", MessageToDateTime.TimeAlias.Minutes);
+            
+            MessageToDateTime.AddAlias("hour(s)", MessageToDateTime.TimeAlias.Hours);
+            MessageToDateTime.AddAlias("h", MessageToDateTime.TimeAlias.Hours);
+
+
+            EggConfig config = ConfigManager.GetEggConfig();
+
             DiscordClient discordClient = new DiscordClient(new DiscordConfiguration
             {
                 Token = config.Token,

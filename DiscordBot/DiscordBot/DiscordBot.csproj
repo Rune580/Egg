@@ -328,6 +328,9 @@
     <Compile Include="Egg.cs" />
     <Compile Include="EggConfig.cs" />
     <Compile Include="GalaxyStroke.cs" />
+    <Compile Include="Helpers\NumericalStringHelper.cs" />
+    <Compile Include="Helpers\StringHelper.cs" />
+    <Compile Include="Helpers\TimeHelper.cs" />
     <Compile Include="MineCraft.cs" />
     <Compile Include="MusicManager.cs" />
     <Compile Include="NonExistantUsers.cs" />
