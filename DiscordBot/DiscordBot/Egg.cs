@@ -30,6 +30,12 @@ namespace DiscordBot
             
             MessageToDateTime.AddAlias("hour(s)", MessageToDateTime.TimeAlias.Hours);
             MessageToDateTime.AddAlias("h", MessageToDateTime.TimeAlias.Hours);
+            
+            MessageToDateTime.AddAlias("day(s)", MessageToDateTime.TimeAlias.Days);
+            
+            MessageToDateTime.AddAlias("month(s)", MessageToDateTime.TimeAlias.Months);
+            
+            MessageToDateTime.AddAlias("year(s)", MessageToDateTime.TimeAlias.Years);
 
 
             EggConfig config = ConfigManager.GetEggConfig();
@@ -52,9 +58,7 @@ namespace DiscordBot
                 UseDefaultCommandHandler = true,
                 
             });
-            
-            commands.RegisterConverter(new MessageToDateTime());
-            
+
             commands.RegisterCommands<ReminderCommands>();
             
             var icfg = new InteractivityConfiguration()

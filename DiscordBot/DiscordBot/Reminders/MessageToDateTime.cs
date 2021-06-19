@@ -6,10 +6,11 @@ using DiscordBot.Helpers;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Converters;
 using DSharpPlus.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Reminders
 {
-    public class MessageToDateTime : IArgumentConverter<DateTime>
+    public class MessageToDateTime
     {
         private static Dictionary<string, TimeAlias> _aliases = new Dictionary<string, TimeAlias>();
 
@@ -33,63 +34,81 @@ namespace DiscordBot.Reminders
             }
         }
         
-        public Task<Optional<DateTime>> ConvertAsync(string value, CommandContext ctx)
+        public static DateTime FromRelative(CommandContext ctx, string input)
         {
-            string[] args = value.Split(' ');
-
-            return new Task<Optional<DateTime>>(() => FromRelative(args));
-        }
-
-        private DateTime FromRelative(string[] args)
-        {
-            int currentNum = -1;
-            TimeAlias currentTime = TimeAlias.Invalid;
+            ctx.Client.Logger.Log(LogLevel.Information, $"Starting conversion for {input}");
             
+            // long currentNum = -1;
+            // TimeAlias currentTime = TimeAlias.Invalid;
+            // string currentMatch = String.Empty;
+
             long relativeUnixTime = 0;
             
-            for (int i = 0; i < args.Length; i++)
-            {
-                if (Int32.TryParse(args[i], out int num))
-                {
-                    currentNum = num;
-                }
-                else if (TryGetAlias(args[i], out TimeAlias alias))
-                {
-                    currentTime = alias;
-                }
+            // Remove numbers from the string and create an array of the remaining strings, this should contain our aliases.
+            string[] aliasArray = input.ReplaceNumbers().Split(new [] {','}, StringSplitOptions.RemoveEmptyEntries);
 
-                if (currentNum > -1 && currentTime != TimeAlias.Invalid)
+            // Iterate through the array of aliases.
+            foreach (var alias in aliasArray)
+            {
+                // Remove aliases from the string and create an array of the numbers.
+                string numString = input.Split(new[] {alias}, StringSplitOptions.RemoveEmptyEntries)[0];
+
+                // See if the string in the alias matches any of our registered aliases.
+                if (TryGetAlias(alias, out TimeAlias timeAlias, out string match))
                 {
-                    DateTime.pa
+                    // Remove the matching alias from the input string.
+                    input = input.Remove(input.IndexOf(match, StringComparison.InvariantCultureIgnoreCase), match.Length);
+                        
+                    // See if the remaining number is a valid number.
+                    if (TryGetInt(numString, out long num))
+                    {
+                        // Remove the number from the input string.
+                        input = input.Remove(input.IndexOf(num.ToString(), StringComparison.InvariantCultureIgnoreCase), num.ToString().Length);
+                            
+                        // Add the time converted to seconds.
+                        relativeUnixTime += num.ToSecondsRelative(timeAlias);
+                    }
                 }
             }
+
+            ctx.Client.Logger.Log(LogLevel.Information, $"Got Time: {relativeUnixTime}");
+            
+            return DateTimeOffset.FromUnixTimeSeconds(DateTimeOffset.Now.ToUnixTimeSeconds() + relativeUnixTime).DateTime;
         }
 
-        private Tuple<long, TimeAlias>[] GetTimes(string[] args)
+        private static bool TryGetInt(string value, out long num)
         {
-            for (int i = 0; i < args.Length; i++)
+            num = 0;
+
+            try
             {
-                args[i]
+                num = value.GetNumber();
+                return true;
+            }
+            catch (Exception e)
+            {
+                return false;
             }
         }
 
-        private bool TryGetAlias(string value, out TimeAlias timeAlias)
+        private static bool TryGetAlias(string value, out TimeAlias timeAlias, out string match)
         {
             timeAlias = TimeAlias.Invalid;
             
             int bestMatch = 0;
 
+            match = string.Empty;
+
             foreach (var aliasPair in _aliases.Where(aliasPair => value.Contains(aliasPair.Key) && aliasPair.Key.Length > bestMatch))
             {
                 timeAlias = aliasPair.Value;
                 bestMatch = aliasPair.Key.Length;
+                match = aliasPair.Key;
             }
 
             return timeAlias != TimeAlias.Invalid;
         }
-        
-        private long TimeToSeconds()
-        
+
         public enum TimeAlias
         {
             Invalid,
