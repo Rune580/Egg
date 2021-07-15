@@ -14,14 +14,11 @@ using CsvHelper;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using ImageProcessor;
-using ImageProcessor.Imaging;
 using System.Net;
 using Discord.Rest;
 using System.Diagnostics;
-using YoutubeSearch;
+using YouTubeSearch;
 using RedditSharp;
-using System.Windows.Forms;
 using Discord.Webhook;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -64,27 +61,29 @@ namespace DiscordBot
         public static bool KilledSelf = false;
         public static int every3seconds = DateTime.Now.Second;
         public static int smashindex = 0;
-        public static List<string> smashmouth = CSVCONVERT(@"../../smashmouth.json");
+        //public static List<string> smashmouth = CSVCONVERT(@"../../smashmouth.json");
         public static List<string> Last3Message = new List<string>();
-        public static List<string> CSVCONVERT(string absolutePath)
-        {
-            List<string> result = new List<string>();
-            string value;
-            using (TextReader fileReader = File.OpenText(absolutePath))
-            {
-                var csv = new CsvReader(fileReader);
-                csv.Configuration.Delimiter = "*";
-                csv.Configuration.HasHeaderRecord = false;
-                while (csv.Read())
-                {
-                    for (int i = 0; csv.TryGetField<string>(i, out value); i++)
-                    {
-                        result.Add(value);
-                    }
-                }
-            }
-            return result;
-        }
+        
+        // This is literally never used...
+        // public static List<string> CSVCONVERT(string absolutePath)
+        // {
+        //     List<string> result = new List<string>();
+        //     string value;
+        //     using (TextReader fileReader = File.OpenText(absolutePath))
+        //     {
+        //         var csv = new CsvReader(fileReader);
+        //         csv.Configuration.Delimiter = "*";
+        //         csv.Configuration.HasHeaderRecord = false;
+        //         while (csv.Read())
+        //         {
+        //             for (int i = 0; csv.TryGetField<string>(i, out value); i++)
+        //             {
+        //                 result.Add(value);
+        //             }
+        //         }
+        //     }
+        //     return result;
+        // }
         public static int trucktimer = -1;
         public static int truckseconds = DateTime.Now.Second;
         public static int RPCcountdown = -1;
@@ -2080,14 +2079,15 @@ namespace DiscordBot
                                 Console.WriteLine("Reddit Time");
                                 PostedRedditLink(message, TheMessageNormal);
                             }
-                            else if (TheMessage.StartsWith("EGGRESTART") || TheMessage.StartsWith("EGG RESTART") || TheMessage.StartsWith("RESTART EGG") || TheMessage.StartsWith("RESTARTEGG"))
-                            {
-                                TopDown.SavePlayers();
-                                await message.Channel.SendMessageAsync($"Restarting, this should only take a second or two.");
-                                //await musicManager.Leave();
-                                Application.Restart();
-                                Environment.Exit(0);
-                            }
+                            // TODO: Re-implement restart command.
+                            // else if (TheMessage.StartsWith("EGGRESTART") || TheMessage.StartsWith("EGG RESTART") || TheMessage.StartsWith("RESTART EGG") || TheMessage.StartsWith("RESTARTEGG"))
+                            // {
+                            //     TopDown.SavePlayers();
+                            //     await message.Channel.SendMessageAsync($"Restarting, this should only take a second or two.");
+                            //     //await musicManager.Leave();
+                            //     Application.Restart();
+                            //     Environment.Exit(0);
+                            // }
                             else if (TheMessage.Contains("GOOGLE IT") || TheMessage.Contains("GOOGLING IT"))
                             {
                                 string PreviousMessageText = "";
@@ -3733,7 +3733,7 @@ namespace DiscordBot
                     }
                     Console.WriteLine($"Querying /r/{MessageContent}");
                     Reddit reddit = new Reddit();
-                    var HotPage = reddit.GetSubreddit($"/r/{MessageContent}").Hot;
+                    var HotPage = reddit.GetSubredditAsync($"/r/{MessageContent}").Result.GetPosts(Sort.Hot);
                     Random rand = new Random();
                     int RandInt = rand.Next(30);
                     EmbedBuilder eb = new EmbedBuilder();
@@ -3937,11 +3937,11 @@ namespace DiscordBot
                     }
                     Reddit reddit = new Reddit();
                     Uri uri = new Uri(URL);
-                    var post = reddit.GetPost(uri);
+                    var post = reddit.GetPostAsync(uri).Result;
                     string TheComment = "";
-                    foreach (var comment in post.Comments)
+                    foreach (var comment in post.GetCommentsAsync().Result)
                     {
-                        if (!comment.IsStickied && TheComment.Count() < 2000)
+                        if (!comment.IsStickied && TheComment.Length < 2000)
                         {
                             TheComment = comment.Body;
                             break;

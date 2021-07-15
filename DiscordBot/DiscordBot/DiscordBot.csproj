@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
-    <OutputType>Console</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <OutputType>Exe</OutputType>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>5</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>9</LangVersion>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <None Include="DiscordBot_1_TemporaryKey.pfx" />
@@ -16,6 +18,8 @@
     <Content Include="smashmouth.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Compile Remove="Program2.cs" />
+    <None Include="Program2.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
@@ -33,10 +37,10 @@
     <Folder Include="CustomCommands" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.12.1" />
-    <PackageReference Include="Autofac" Version="4.9.4" />
-    <PackageReference Include="ConcurrentHashSet" Version="1.1.0" />
-    <PackageReference Include="CsvHelper" Version="12.1.2" />
+    <PackageReference Include="AngleSharp" Version="0.16.0" />
+    <PackageReference Include="Autofac" Version="6.2.0" />
+    <PackageReference Include="ConcurrentHashSet" Version="1.2.0" />
+    <PackageReference Include="CsvHelper" Version="27.1.1" />
     <PackageReference Include="Discord.Addons.PassiveInteractive" Version="2.0.4" />
     <PackageReference Include="Discord.Net" Version="2.4.0" />
     <PackageReference Include="Discord.Net.Commands" Version="2.4.0" />
@@ -44,36 +48,35 @@
     <PackageReference Include="Discord.Net.Rest" Version="2.4.0" />
     <PackageReference Include="Discord.Net.Webhook" Version="2.4.0" />
     <PackageReference Include="Discord.Net.WebSocket" Version="2.4.0" />
-    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00879" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00879" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00879" />
-    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0-nightly-00879" />
+    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00919" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00919" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00919" />
+    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0-nightly-00919" />
     <PackageReference Include="DSharpPlus.VoiceNext.Natives" Version="1.0.0" />
     <PackageReference Include="Emzi0767.Common" Version="2.6.2" />
-    <PackageReference Include="Google.Apis" Version="1.40.0" />
-    <PackageReference Include="Google.Apis.Auth" Version="1.40.0" />
-    <PackageReference Include="Google.Apis.Core" Version="1.40.0" />
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.40.0.1593" />
+    <PackageReference Include="Google.Apis" Version="1.52.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.52.0" />
+    <PackageReference Include="Google.Apis.Core" Version="1.52.0" />
+    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.52.0.2378" />
     <PackageReference Include="HSNXT.DSharpPlus.ModernEmbedBuilder" Version="5.0.0-pre.210" />
-    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.4.0" />
-    <PackageReference Include="ImageProcessor" Version="2.9.1" />
-    <PackageReference Include="Imgur.API" Version="4.0.1" />
+    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.6.1" />
+    <PackageReference Include="Imgur.API" Version="5.0.0" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="2.2.1" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="5.0.2" />
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Nito.AsyncEx.Context" Version="5.0.0" />
-    <PackageReference Include="Nito.AsyncEx.Tasks" Version="5.0.0" />
-    <PackageReference Include="Nito.Disposables" Version="2.0.0" />
-    <PackageReference Include="NYoutubeDL" Version="0.10.5" />
+    <PackageReference Include="Nito.AsyncEx.Context" Version="5.1.0" />
+    <PackageReference Include="Nito.AsyncEx.Tasks" Version="5.1.0" />
+    <PackageReference Include="Nito.Disposables" Version="2.2.0" />
+    <PackageReference Include="NYoutubeDL" Version="0.11.2" />
     <PackageReference Include="OpenSSL.PrivateKeyDecoder" Version="1.3.0" />
     <PackageReference Include="OpenSSL.X509Certificate2.Provider" Version="1.3.0" />
-    <PackageReference Include="RedditSharp" Version="1.1.14" />
+    <PackageReference Include="RedditSharp" Version="2.0.0" />
     <PackageReference Include="System.AppContext" Version="4.3.0" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
@@ -84,19 +87,20 @@
     <PackageReference Include="System.Console" Version="4.3.1" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.5.1" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="5.0.1" />
     <PackageReference Include="System.Diagnostics.Tools" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Tracing" Version="4.3.0" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
     <PackageReference Include="System.Globalization" Version="4.3.0" />
     <PackageReference Include="System.Globalization.Calendars" Version="4.3.0" />
-    <PackageReference Include="System.Interactive.Async" Version="4.0.0" />
+    <PackageReference Include="System.Interactive.Async" Version="5.0.0" />
     <PackageReference Include="System.IO" Version="4.3.0" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
     <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
-    <PackageReference Include="System.Linq.Async" Version="4.0.0" />
+    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
     <PackageReference Include="System.Linq.Expressions" Version="4.3.0" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
     <PackageReference Include="System.Net.Primitives" Version="4.3.1" />
@@ -105,14 +109,14 @@
     <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.2" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     <PackageReference Include="System.ObjectModel" Version="4.3.0" />
-    <PackageReference Include="System.Reactive.Core" Version="3.1.1" />
-    <PackageReference Include="System.Reactive.Interfaces" Version="3.1.1" />
-    <PackageReference Include="System.Reactive.Linq" Version="3.1.1" />
-    <PackageReference Include="System.Reactive.PlatformServices" Version="3.1.1" />
+    <PackageReference Include="System.Reactive.Core" Version="5.0.0" />
+    <PackageReference Include="System.Reactive.Interfaces" Version="5.0.0" />
+    <PackageReference Include="System.Reactive.Linq" Version="5.0.0" />
+    <PackageReference Include="System.Reactive.PlatformServices" Version="5.0.0" />
     <PackageReference Include="System.Reflection" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Extensions" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
     <PackageReference Include="System.Resources.ResourceManager" Version="4.3.0" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
@@ -126,7 +130,7 @@
     <PackageReference Include="System.Security.Cryptography.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
     <PackageReference Include="System.Text.Encoding" Version="4.3.0" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
     <PackageReference Include="System.Text.Encoding.Extensions" Version="4.3.0" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
@@ -136,8 +140,8 @@
     <PackageReference Include="System.Threading.Timer" Version="4.3.0" />
     <PackageReference Include="System.Xml.ReaderWriter" Version="4.3.1" />
     <PackageReference Include="System.Xml.XDocument" Version="4.3.0" />
-    <PackageReference Include="YamlDotNet" Version="11.1.3-nullable-enums-0003" />
-    <PackageReference Include="YoutubeSearch.dll" Version="1.1" />
+    <PackageReference Include="YamlDotNet" Version="11.2.1" />
+    <PackageReference Include="YouTubeSearch" Version="2.2.6" />
   </ItemGroup>
   <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
 </Project>

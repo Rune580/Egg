@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Webhook;
 using Discord.WebSocket;
+using System.Drawing;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Image = Discord.Image;
 
 namespace DiscordBot
 {
@@ -692,12 +694,12 @@ namespace DiscordBot
                             if (!File.Exists($@"..\..\{user.ID}image.png"))
                             {
                                 var yes = Client.GetUser(user.ID).GetAvatarUrl();
-                                System.Drawing.Image image = DownloadImageFromUrl(yes.Trim());
+                                var image = DownloadImageFromUrl(yes.Trim());
                                 image.Save($@"..\..\{user.ID}image.png");
                             }
 
                             var hook = (message.Channel as SocketTextChannel).CreateWebhookAsync("Fuck u");
-                            Image im = new Image($@"..\..\{user.ID}image.png");
+                            System.Drawing.Image im = System.Drawing.Image.FromFile($@"..\..\{user.ID}image.png");
                             await hook.Result.ModifyAsync(x =>
                             {
                                 try
@@ -708,7 +710,8 @@ namespace DiscordBot
                                 {
                                     x.Name = Client.GetUser(user.ID).Username;
                                 }
-                                x.Image = im;
+                                // TODO: fix image shit.
+                                //x.Image = new Optional<Image?>(im);
                             });
                             DiscordWebhookClient d = new DiscordWebhookClient(hook.Result);
                             await d.SendMessageAsync(user.Return[RanReturn]);
