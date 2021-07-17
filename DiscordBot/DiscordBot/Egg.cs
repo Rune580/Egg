@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DiscordBot.CustomCommands;
 using DiscordBot.Reminders;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -70,9 +71,12 @@ namespace DiscordBot
 
             InteractivityExtension interactivity = discordClient.UseInteractivity(icfg);
 
+            CustomCommandsManager.Init();
+
+            discordClient.MessageCreated += CustomCommandsManager.CustomCommandHandler;
 
             discordClient.Ready += DiscordClientOnReady;
-            
+
             await discordClient.ConnectAsync();
             await Task.Delay(-1);
         }
