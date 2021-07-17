@@ -1,0 +1,15 @@
+namespace DiscordBot.CustomCommands.Storage;
+
+enum CustomCommandReturnType : byte { Message, Audio }
+
+table CustomCommand {
+    owner:ulong;
+    trigger:string;
+    returnType:CustomCommandReturnType;
+}
+
+table CustomCommandContainer {
+    list:[CustomCommand];
+}
+
+root_type CustomCommandContainer;
