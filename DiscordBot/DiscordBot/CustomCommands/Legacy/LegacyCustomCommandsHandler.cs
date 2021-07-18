@@ -94,6 +94,10 @@ namespace DiscordBot.CustomCommands.Legacy
                                 yeet2.Add(ulong.Parse(item));
                             }
                         }
+
+                        var command = GetCurrentCommand();
+                        command.disguises = yeet2;
+                        SetCurrentCommand(command);
                         //ToggleAsMe(_Trigger, yeet2, false);
                     }
                 }

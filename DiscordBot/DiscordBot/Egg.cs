@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using DiscordBot.CustomCommands;
+using DiscordBot.EggCommands;
 using DiscordBot.Reminders;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -55,12 +56,12 @@ namespace DiscordBot
                 PrefixResolver = msg => Task.FromResult(0),
                 CaseSensitive = false,
                 EnableDms = false,
-                IgnoreExtraArguments = false,
-                UseDefaultCommandHandler = true,
-                
+                IgnoreExtraArguments = true,
+                UseDefaultCommandHandler = false
             });
 
             commands.RegisterCommands<ReminderCommands>();
+            commands.RegisterCommands<CustomCommands.CustomCommands>();
             
             var icfg = new InteractivityConfiguration()
             {
@@ -74,6 +75,7 @@ namespace DiscordBot
             CustomCommandsManager.Init();
 
             discordClient.MessageCreated += CustomCommandsManager.CustomCommandHandler;
+            discordClient.MessageCreated += EggCommandsManager.HandleCommand;
 
             discordClient.Ready += DiscordClientOnReady;
 

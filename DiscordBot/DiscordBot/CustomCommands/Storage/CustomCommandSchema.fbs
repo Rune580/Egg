@@ -9,6 +9,7 @@ table CustomCommand {
     requirePrefix:bool;
     returnType:CustomCommandReturnType;
     content:[string];
+    disguises:[ulong];
 }
 
 table CustomCommandContainer {

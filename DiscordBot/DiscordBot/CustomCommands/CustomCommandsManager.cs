@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using DiscordBot.CustomCommands.Legacy;
 using DiscordBot.CustomCommands.Storage;
@@ -14,38 +15,83 @@ namespace DiscordBot.CustomCommands
     public static class CustomCommandsManager
     {
         private static CustomCommandContainer _commandContainer;
+
+        private static List<string> _registeredTriggers;
         
         public static void Init()
         {
-            //_commandContainer = new CustomCommandContainer();
-
-            _commandContainer = LoadFromLegacy();
+            _registeredTriggers = new List<string>();
             
+            if (File.Exists("CustomCommands"))
+            {
+                _commandContainer = Deserialize();
+            }
+            else if (File.Exists("../../../UserCommands.txt") || File.Exists("../../UserCommands.txt"))
+            {
+                _commandContainer = LoadFromLegacy();
+            }
+            else
+            {
+                _commandContainer = new CustomCommandContainer();
+            }
+
+            if (_commandContainer.commands == null)
+            {
+                _commandContainer.commands = new List<CustomCommand>();
+            }
+
             Serialize();
         }
         
         public static Task CustomCommandHandler(DiscordClient client, MessageCreateEventArgs e)
         {
-            var command = GetCommand(e.Message.Content);
+            var command = GetCustomCommand(e.Message.Content);
 
             if (command != null)
             {
-                RunCommand(e.Channel, command);
+                RunCustomCommand(e.Channel, command);
             }
             
             return Task.CompletedTask;
         }
 
+        public static void AddCustomCommand(CustomCommand command)
+        {
+            _registeredTriggers.Add(command.trigger);
+
+            _commandContainer.commands?.Add(command);
+        }
+
+        public static void RegisterTriggers(IEnumerable<string> triggers)
+        {
+            _registeredTriggers ??= new List<string>();
+            
+            foreach (var trigger in triggers)
+                _registeredTriggers.Add(trigger);
+        }
+
+        public static bool IsTriggerRegistered(string trigger)
+        {
+            return _registeredTriggers.Any(s => string.Equals(s, trigger, StringComparison.InvariantCultureIgnoreCase));
+        }
+
         private static CustomCommandContainer LoadFromLegacy()
         {
+            CustomCommand[] commands = LegacyCustomCommandsHandler.LoadCommands();
+
+            foreach (var command in commands)
+            {
+                _registeredTriggers.Add(command.trigger);
+            }
+            
             CustomCommandContainer container = new CustomCommandContainer()
             {
-                commands = LegacyCustomCommandsHandler.LoadCommands()
+                commands = commands
             };
             return container;
         }
 
-        private static CustomCommand GetCommand(string message)
+        public static CustomCommand GetCustomCommand(string message)
         {
             if (_commandContainer.commands == null)
                 return null;
@@ -83,7 +129,7 @@ namespace DiscordBot.CustomCommands
             return matches[0];
         }
 
-        private static async void RunCommand(DiscordChannel channel, CustomCommand command)
+        public static async void RunCustomCommand(DiscordChannel channel, CustomCommand command)
         {
             if (command.content is {Count: > 0})
             {
@@ -102,6 +148,12 @@ namespace DiscordBot.CustomCommands
             int bytesWritten = FlatBufferSerializer.Default.Serialize(_commandContainer, buffer);
             
             File.WriteAllBytes("CustomCommands", buffer);
+        }
+        
+        private static CustomCommandContainer Deserialize()
+        {
+            var data = File.ReadAllBytes("CustomCommands");
+            return FlatBufferSerializer.Default.Parse<CustomCommandContainer>(data);
         }
     }
 }
