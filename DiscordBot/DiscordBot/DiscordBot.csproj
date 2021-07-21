@@ -48,10 +48,10 @@
     <PackageReference Include="Discord.Net.Rest" Version="2.4.0" />
     <PackageReference Include="Discord.Net.Webhook" Version="2.4.0" />
     <PackageReference Include="Discord.Net.WebSocket" Version="2.4.0" />
-    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00919" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00919" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00919" />
-    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0-nightly-00919" />
+    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00924" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00924" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00924" />
+    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0-nightly-00924" />
     <PackageReference Include="DSharpPlus.VoiceNext.Natives" Version="1.0.0" />
     <PackageReference Include="Emzi0767.Common" Version="2.6.2" />
     <PackageReference Include="FlatSharp" Version="5.5.0" />
@@ -148,6 +148,9 @@
     <PackageReference Include="System.Xml.XDocument" Version="4.3.0" />
     <PackageReference Include="YamlDotNet" Version="11.2.1" />
     <PackageReference Include="YouTubeSearch" Version="2.2.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EggCommands\Storage" />
   </ItemGroup>
   <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
 </Project>

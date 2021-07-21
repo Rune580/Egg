@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DiscordBot.CustomCommands.Legacy;
 using DiscordBot.CustomCommands.Storage;
+using DiscordBot.Helpers;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -17,7 +18,7 @@ namespace DiscordBot.CustomCommands
         private static CustomCommandContainer _commandContainer;
 
         private static List<string> _registeredTriggers;
-        
+
         public static void Init()
         {
             _registeredTriggers = new List<string>();
@@ -35,21 +36,21 @@ namespace DiscordBot.CustomCommands
                 _commandContainer = new CustomCommandContainer();
             }
 
-            if (_commandContainer.commands == null)
-            {
-                _commandContainer.commands = new List<CustomCommand>();
-            }
+            _commandContainer.commands ??= new List<CustomCommand>();
 
             Serialize();
         }
         
         public static Task CustomCommandHandler(DiscordClient client, MessageCreateEventArgs e)
         {
+            if (e.Author.IsCurrent)
+                return Task.CompletedTask;
+            
             var command = GetCustomCommand(e.Message.Content);
 
             if (command != null)
             {
-                RunCustomCommand(e.Channel, command);
+                RunCustomCommand(client, e, command);
             }
             
             return Task.CompletedTask;
@@ -57,12 +58,35 @@ namespace DiscordBot.CustomCommands
 
         public static void AddCustomCommand(CustomCommand command)
         {
-            _registeredTriggers.Add(command.trigger);
-
-            _commandContainer.commands?.Add(command);
+            _commandContainer ??= new CustomCommandContainer();
+            _commandContainer.commands ??= new List<CustomCommand>();
+            
+            _commandContainer.commands.Add(command);
+            RegisterCustomCommandTriggers(command.triggers);
+            
+            Serialize();
         }
 
-        public static void RegisterTriggers(IEnumerable<string> triggers)
+
+        public static void UpdateCustomCommand(string trigger, CustomCommand newCommand)
+        {
+            if (_commandContainer.commands == null)
+                return;
+            
+            for (int i = 0; i < _commandContainer.commands.Count; i++)
+            {
+                var triggers = _commandContainer.commands[i].triggers;
+                
+                if (triggers != null && triggers.Contains(trigger, StringComparer.InvariantCultureIgnoreCase))
+                {
+                    _commandContainer.commands[i] = newCommand;
+                }
+            }
+            
+            Serialize();
+        }
+
+        public static void RegisterCustomCommandTriggers(IEnumerable<string> triggers)
         {
             _registeredTriggers ??= new List<string>();
             
@@ -70,9 +94,30 @@ namespace DiscordBot.CustomCommands
                 _registeredTriggers.Add(trigger);
         }
 
-        public static bool IsTriggerRegistered(string trigger)
+        public static bool IsCustomCommandTriggerRegistered(string trigger, out CustomCommand command)
         {
-            return _registeredTriggers.Any(s => string.Equals(s, trigger, StringComparison.InvariantCultureIgnoreCase));
+            command = null;
+
+            bool isRegistered = _registeredTriggers.Any(s => string.Equals(s, trigger, StringComparison.InvariantCultureIgnoreCase));
+
+            if (isRegistered)
+            {
+                command = GetCustomCommand(trigger);
+            }
+            
+            return isRegistered;
+        }
+
+        public static string[] GetAllRegisteredTriggers()
+        {
+            string[] triggers = new string[25];
+
+            for (int i = 0; i < triggers.Length; i++)
+            {
+                triggers[i] = _registeredTriggers[i];
+            }
+
+            return triggers;
         }
 
         private static CustomCommandContainer LoadFromLegacy()
@@ -81,13 +126,14 @@ namespace DiscordBot.CustomCommands
 
             foreach (var command in commands)
             {
-                _registeredTriggers.Add(command.trigger);
+                RegisterCustomCommandTriggers(command.triggers);
             }
             
             CustomCommandContainer container = new CustomCommandContainer()
             {
                 commands = commands
             };
+            
             return container;
         }
 
@@ -96,25 +142,42 @@ namespace DiscordBot.CustomCommands
             if (_commandContainer.commands == null)
                 return null;
 
-            List<CustomCommand> matches = new List<CustomCommand>();
+            Dictionary<string, CustomCommand> matches = new Dictionary<string, CustomCommand>();
 
             foreach (var command in _commandContainer.commands)
             {
-                if (string.IsNullOrEmpty(command?.trigger))
+                if (command.triggers == null)
                     continue;
-                
-                if (command.fuzzy)
+
+                foreach (var commandTrigger in command.triggers)
                 {
-                    if (message.Contains(command?.trigger, StringComparison.InvariantCultureIgnoreCase))
+                    if (string.IsNullOrEmpty(commandTrigger))
+                        continue;
+                    
+                    if (command.fuzzy)
                     {
-                        matches.Add(command);
+                        if (message.Contains(commandTrigger, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            matches.Add(commandTrigger, command);
+                        }
                     }
-                }
-                else
-                {
-                    if (message.StartsWith(command?.trigger, StringComparison.InvariantCultureIgnoreCase))
+                    else
                     {
-                        matches.Add(command);
+                        if (!message.StartsWith(commandTrigger, StringComparison.InvariantCultureIgnoreCase))
+                            continue;
+                    
+                        if (message.Length > commandTrigger.Length)
+                        {
+                            var nextChar = message[commandTrigger.Length];
+                            if (char.IsWhiteSpace(nextChar))
+                            {
+                                matches.Add(commandTrigger, command);
+                            }
+                        }
+                        else
+                        {
+                            matches.Add(commandTrigger, command);
+                        }
                     }
                 }
             }
@@ -122,22 +185,39 @@ namespace DiscordBot.CustomCommands
             if (matches.Count == 0)
                 return null;
             
-            // The commands have been checked before they were added to the list.
-            // ReSharper disable twice PossibleNullReferenceException
-            matches.Sort((a, b) => b.trigger.Length - a.trigger.Length);
+            var sortedMatches = (from entry in matches orderby entry.Key.Length descending select entry).ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            var bestMatch = sortedMatches.First();
                 
-            return matches[0];
+            return bestMatch.Value;
         }
 
-        public static async void RunCustomCommand(DiscordChannel channel, CustomCommand command)
+        private static async void RunCustomCommand(DiscordClient client, MessageCreateEventArgs eventArgs, CustomCommand command)
         {
-            if (command.content is {Count: > 0})
-            {
-                Random random = new Random();
+            if (command.content is not {Count: > 0})
+                return;
+            
+            Random random = new Random();
 
-                var index = random.Next(0, command.content.Count);
-                
-                var msg = await new DiscordMessageBuilder().WithContent(command.content[index]).SendAsync(channel);
+            var index = random.Next(0, command.content.Count);
+
+            if (command.disguises is {Count: > 0})
+            {
+                var webhookBuilder = new DiscordWebhookBuilder().WithContent(command.content[index]);
+
+                var disguise = random.Next(0, command.disguises.Count);
+
+                await webhookBuilder.SetDisguise(client, eventArgs.Guild.Id, command.disguises[disguise]);
+
+                var webhook = await eventArgs.Channel.CreateWebhookAsync("Egg Disguise");
+                    
+                await webhookBuilder.SendAsync(webhook);
+
+                await webhook.DeleteAsync();
+            }
+            else
+            {
+                var msg = await new DiscordMessageBuilder().WithContent(command.content[index]).SendAsync(eventArgs.Channel);
             }
         }
 
@@ -145,7 +225,7 @@ namespace DiscordBot.CustomCommands
         {
             int maxBytesNeeded = FlatBufferSerializer.Default.GetMaxSize(_commandContainer);
             byte[] buffer = new byte[maxBytesNeeded];
-            int bytesWritten = FlatBufferSerializer.Default.Serialize(_commandContainer, buffer);
+            FlatBufferSerializer.Default.Serialize(_commandContainer, buffer);
             
             File.WriteAllBytes("CustomCommands", buffer);
         }
@@ -153,7 +233,18 @@ namespace DiscordBot.CustomCommands
         private static CustomCommandContainer Deserialize()
         {
             var data = File.ReadAllBytes("CustomCommands");
-            return FlatBufferSerializer.Default.Parse<CustomCommandContainer>(data);
+
+            var customCommandContainer = FlatBufferSerializer.Default.Parse<CustomCommandContainer>(data);
+
+            if (customCommandContainer.commands != null)
+            {
+                foreach (var customCommand in customCommandContainer.commands)
+                {
+                    RegisterCustomCommandTriggers(customCommand.triggers);
+                }
+            }
+            
+            return customCommandContainer;
         }
     }
 }

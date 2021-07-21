@@ -4,7 +4,7 @@ enum CustomCommandReturnType : byte { Message, Audio }
 
 table CustomCommand {
     owner:ulong;
-    trigger:string;
+    triggers:[string];
     fuzzy:bool;
     requirePrefix:bool;
     returnType:CustomCommandReturnType;

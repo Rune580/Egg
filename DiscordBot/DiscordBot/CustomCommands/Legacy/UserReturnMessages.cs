@@ -13,7 +13,7 @@ using Image = Discord.Image;
 namespace DiscordBot.CustomCommands.Legacy
 {
     /// <summary>
-    /// Custom Commands class
+    /// Old Custom Commands class
     /// </summary>
     public class UserReturnMessages
     {

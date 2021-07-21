@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
+using DiscordBot.CommandAttributes;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
@@ -10,40 +11,87 @@ namespace DiscordBot.EggCommands
 {
     public static class EggCommandsManager
     {
-        private static Dictionary<string, string> _triggerAliases = new();
+        //private static readonly Dictionary<EggCommandAttribute, string> TriggerAliases = new();
+
+        private static readonly List<EggCommandAttribute> EggCommands = new();
         
-        public static void RegisterCommand(string[] triggers, string baseTrigger)
+        public static void RegisterCommand(EggCommandAttribute eggCommand)
         {
-            foreach (var trigger in triggers)
-                _triggerAliases.Add(trigger.ToLower(CultureInfo.InvariantCulture), baseTrigger.ToLower(CultureInfo.InvariantCulture));
+            EggCommands.Add(eggCommand);
+        }
+
+        public static EggCommandAttribute GetEggCommandFromCommand(Command command)
+        {
+            foreach (var eggCommand in EggCommands)
+            {
+                if (string.Equals(eggCommand.GetInternalTrigger(), command.Name, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return eggCommand;
+                }
+            }
+
+            return null;
+        }
+
+        public static bool IsBotTriggerRegistered(string trigger)
+        {
+            return EggCommands.Any(eggCommand => eggCommand.MatchesAny(trigger));
         }
 
         private static string GetCommandString(string message)
         {
-            List<string> matches = new List<string>();
+            Dictionary<string, EggCommandAttribute> matches = new Dictionary<string, EggCommandAttribute>();
 
-            foreach (var (key, _) in _triggerAliases)
+            foreach (var eggCommand in EggCommands)
             {
-                if (message.StartsWith(key, StringComparison.InvariantCultureIgnoreCase))
+                if (message.StartsWith("help") && message.Length > 4)
                 {
-                    matches.Add(key);
+                    var nextChar = message[4];
+
+                    if (!Char.IsWhiteSpace(nextChar))
+                        break;
+                    
+                    var commandString = message.Remove(0, 5);
+                    
+                    if (eggCommand.BestMatchInMessage(commandString, out var subMatch))
+                    {
+                        matches.Add(subMatch, eggCommand);
+                    }
+                    else if (!eggCommand.ShowInternalTrigger && commandString.StartsWith(eggCommand.GetInternalTrigger(), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        break;
+                    }
+                }
+                else if (eggCommand.BestMatchInMessage(message, out var match))
+                {
+                    matches.Add(match, eggCommand);
+                }
+                else if (!eggCommand.ShowInternalTrigger && message.StartsWith(eggCommand.GetInternalTrigger(), StringComparison.InvariantCultureIgnoreCase))
+                {
+                    break;
                 }
             }
-            
+
             if (matches.Count == 0)
                 return message;
-            
-            matches.Sort((a, b) => b.Length - a.Length);
 
-            int index = message.IndexOf(matches[0], StringComparison.InvariantCultureIgnoreCase);
-            message = message.Remove(index, matches[0].Length);
-            message = _triggerAliases[matches[0]] + " " + message;
+            var sortedMatches = (from entry in matches orderby entry.Key.Length descending select entry).ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            var bestMatch = sortedMatches.First();
+
+            int index = message.IndexOf(bestMatch.Key, StringComparison.InvariantCultureIgnoreCase);
+            
+            message = message.Remove(index, bestMatch.Key.Length);
+            message = message.Insert(index, bestMatch.Value.GetInternalTrigger());
             
             return message.Trim();
         }
         
         public static Task HandleCommand(DiscordClient client, MessageCreateEventArgs e)
         {
+            if (e.Author.IsCurrent)
+                return Task.CompletedTask;
+            
             var commandsNext = client.GetCommandsNext();
             var msg = e.Message;
 

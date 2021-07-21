@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DiscordBot.CustomCommands.Storage;
@@ -59,28 +58,28 @@ namespace DiscordBot.CustomCommands.Legacy
                                 }
                             }
                         }
-                        List<ulong> yeet = new List<ulong>();
-                        yeet.Add(69);
-                        
+
                         EndCurrentCommand();
                         
                         var command = GetCurrentCommand();
-                        command.trigger = _Trigger;
+                        command.triggers = new List<string> { _Trigger };
                         command.content = TempList;
                         command.fuzzy = _Contains;
-                        //TODO implement disguising
                         SetCurrentCommand(command);
                         
                         //AddCommand(_Trigger, TempList.ToArray(), _Contains, yeet);
-
                     }
                     else if (i % 4 == 2)
                     {
                         _Owner = ulong.Parse(lines[i]);
+
+                        if (_Owner is 69 or 0)
+                            continue;
                         
                         var command = GetCurrentCommand();
                         command.owner = _Owner;
                         SetCurrentCommand(command);
+                        
                         //ClaimCommand(_Trigger, _Owner);
                     }
                     else if (i % 4 == 3)
@@ -89,7 +88,7 @@ namespace DiscordBot.CustomCommands.Legacy
                         List<ulong> yeet2 = new List<ulong>();
                         foreach (var item in yeet)
                         {
-                            if (item != "")
+                            if (item != "" && item != "0" && item != "69")
                             {
                                 yeet2.Add(ulong.Parse(item));
                             }
@@ -98,6 +97,7 @@ namespace DiscordBot.CustomCommands.Legacy
                         var command = GetCurrentCommand();
                         command.disguises = yeet2;
                         SetCurrentCommand(command);
+                        
                         //ToggleAsMe(_Trigger, yeet2, false);
                     }
                 }

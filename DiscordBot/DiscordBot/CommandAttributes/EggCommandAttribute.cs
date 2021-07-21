@@ -1,46 +1,101 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using DiscordBot.CustomCommands;
 using DiscordBot.EggCommands;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
 
 namespace DiscordBot.CommandAttributes
 {
+    /// <summary>
+    /// The EggCommandAttribute allows hiding the default command name, and provides
+    /// the ability to have whitespaces in the command triggers. The default command name
+    /// is hidden by default.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class EggCommandAttribute : Attribute
     {
         private readonly string[] _triggers;
+        private readonly string _internalTrigger;
+        public bool ShowInternalTrigger { get; }
 
-        public EggCommandAttribute(string baseTrigger, params string[] triggers)
+        /// <summary>
+        /// Marks this command as an EggCommand.
+        /// Hides the default command name.
+        /// Allows whitespaces in the command triggers.
+        /// </summary>
+        /// <param name="internalTrigger"> The method name, hidden by default.</param>
+        /// <param name="triggers"> The command triggers to be used to invoke this command. Not case-sensitive. Any triggers with white spaces will have an alias without white spaces generated. </param>
+        public EggCommandAttribute(string internalTrigger, params string[] triggers)
         {
+            _internalTrigger = internalTrigger;
+            
             List<string> tempTriggers = new List<string>();
             
             foreach (var trigger in triggers)
             {
                 if (!tempTriggers.Contains(trigger))
                     tempTriggers.Add(trigger);
+
+                if (!trigger.Contains(' ', StringComparison.InvariantCulture))
+                    continue;
                 
-                if (trigger.Contains(' ', StringComparison.InvariantCulture))
-                {
-                    var tempTrigger = trigger.Replace(" ", "");
+                var tempTrigger = trigger.Replace(" ", "");
                     
-                    if (!tempTriggers.Contains(tempTrigger))
-                        tempTriggers.Add(tempTrigger);
-                }
+                if (!tempTriggers.Contains(tempTrigger))
+                    tempTriggers.Add(tempTrigger);
             }
 
             _triggers = tempTriggers.ToArray();
             
-            CustomCommandsManager.RegisterTriggers(_triggers);
-            EggCommandsManager.RegisterCommand(_triggers, baseTrigger);
+            EggCommandsManager.RegisterCommand(this);
         }
 
-        public bool Matches(string trigger)
+        public EggCommandAttribute(string internalTrigger, bool showInternalTrigger, params string[] triggers) : this(internalTrigger, triggers)
         {
-            return _triggers.Any(s => string.Equals(s, trigger, StringComparison.InvariantCultureIgnoreCase));
+            ShowInternalTrigger = showInternalTrigger;
+        }
+
+        public bool BestMatchInMessage(string message, out string bestMatch)
+        {
+            bestMatch = "";
+            
+            List<string> matches = _triggers.Where(trigger => message.StartsWith(trigger, StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+            if (matches.Count == 0)
+                return false;
+            
+            matches.Sort((a, b) => b.Length - a.Length);
+            
+            bestMatch = matches[0];
+            
+            return true;
+        }
+
+        public bool MatchesAny(string triggerToCheck)
+        {
+            return _triggers.Any(trigger => string.Equals(trigger, triggerToCheck, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public string GetPreferredTrigger()
+        {
+            return _triggers[0];
+        }
+
+        public string[] GetExclusiveAliases()
+        {
+            List<string> aliases = new List<string>();
+            
+            for (int i = 1; i < _triggers.Length; i++)
+            {
+                aliases.Add(_triggers[i]);
+            }
+
+            return aliases.ToArray();
+        }
+        
+        public string GetInternalTrigger()
+        {
+            return _internalTrigger;
         }
     }
 }

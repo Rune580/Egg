@@ -9,6 +9,7 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
 using Microsoft.Extensions.Logging;
 
 namespace DiscordBot
@@ -56,12 +57,14 @@ namespace DiscordBot
                 PrefixResolver = msg => Task.FromResult(0),
                 CaseSensitive = false,
                 EnableDms = false,
-                IgnoreExtraArguments = true,
+                IgnoreExtraArguments = false,
                 UseDefaultCommandHandler = false
             });
 
             commands.RegisterCommands<ReminderCommands>();
             commands.RegisterCommands<CustomCommands.CustomCommands>();
+            
+            commands.SetHelpFormatter<EggCommandHelpFormatter>();
             
             var icfg = new InteractivityConfiguration()
             {
@@ -74,6 +77,10 @@ namespace DiscordBot
 
             CustomCommandsManager.Init();
 
+            SlashCommandsExtension slash = discordClient.UseSlashCommands();
+            
+            slash.RegisterCommands<SlashCustomCommands>();
+            
             discordClient.MessageCreated += CustomCommandsManager.CustomCommandHandler;
             discordClient.MessageCreated += EggCommandsManager.HandleCommand;
 
