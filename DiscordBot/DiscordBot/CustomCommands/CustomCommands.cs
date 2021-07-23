@@ -9,6 +9,8 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 
 namespace DiscordBot.CustomCommands
@@ -80,11 +82,20 @@ namespace DiscordBot.CustomCommands
                     var msg = await messageBuilder.AddComponents(appendButton, overrideButton, cancelButton)
                         .SendAsync(ctx.Channel);
 
-                    var result = await msg.WaitForButtonAsync(ctx.User, TimeSpan.FromSeconds(30));
+                    var result = await msg.WaitForButtonAsync(TimeSpan.FromSeconds(30));
 
                     while (!result.TimedOut)
                     {
                         await result.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+                        
+                        if (result.Result.User.Id != ctx.User.Id)
+                        {
+                            await result.Result.Interaction.CreateResponseAsync(
+                                InteractionResponseType.ChannelMessageWithSource,
+                                new DiscordInteractionResponseBuilder().AsEphemeral(true)
+                                    .WithContent("You are not the user who started this operation."));
+                            continue;
+                        }
                         
                         switch (result.Result.Id)
                         {
@@ -121,12 +132,32 @@ namespace DiscordBot.CustomCommands
         }
 
         [Command]
-        [EggCommand("NewAddCustomCommand", "New Command")]
-        public async Task NewAddCustomCommand(CommandContext ctx)
+        [EggCommand("ShowAllCustomCommands", "Show Custom Commands")]
+        public async Task ShowAllCustomCommands(CommandContext ctx)
         {
+            var commands = CustomCommandsManager.GetAllCustomCommands();
+
+            DiscordComponent[] components =
+            {
+                new DiscordButtonComponent(ButtonStyle.Secondary, "prev_page_button", "", true, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client ,":arrow_left:"))),
+                new DiscordButtonComponent(ButtonStyle.Secondary, "next_page_button", "", false, new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":arrow_right:")))
+            };
+
             var messageBuilder = new DiscordMessageBuilder();
+            messageBuilder.AddComponents(components);
             
-            
+            var embedBuilder = new DiscordEmbedBuilder();
+            embedBuilder.Title = "All Custom Commands";
+
+            InteractivityResult<ComponentInteractionCreateEventArgs> result;
+
+            do
+            {
+                if (result.Result == null)
+                {
+                    
+                }
+            } while (!result.TimedOut);
         }
     }
 }

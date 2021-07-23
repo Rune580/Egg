@@ -108,18 +108,11 @@ namespace DiscordBot.CustomCommands
             return isRegistered;
         }
 
-        public static string[] GetAllRegisteredTriggers()
+        public static CustomCommand[] GetAllCustomCommands()
         {
-            string[] triggers = new string[25];
-
-            for (int i = 0; i < triggers.Length; i++)
-            {
-                triggers[i] = _registeredTriggers[i];
-            }
-
-            return triggers;
+            return _commandContainer.commands as CustomCommand[];
         }
-
+        
         private static CustomCommandContainer LoadFromLegacy()
         {
             CustomCommand[] commands = LegacyCustomCommandsHandler.LoadCommands();
